@@ -78,6 +78,13 @@
   hardware.nvidia.modesetting.enable = true;
   hardware.graphics.enable32Bit = true;
 
+  # Configure Hyprland + Nvidia
+  environment.sessionVariables = {
+    WLR_NO_HARDWARE_CURSORS = "1";
+    GBM_BACKEND = "nvidia-drm";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+  };
+
   # Configure keymap in X11
   services.xserver.xkb = {
     layout = "fr";
@@ -125,6 +132,9 @@
    user = "izuki";
   };
 
+  # Install Hyprland.
+  programs.hyprland.enable = true;
+
   # Install firefox.
   programs.firefox.enable = true;
 
@@ -137,19 +147,6 @@
   
   programs.gamemode.enable = true;
 
-  # Instaaaall gamescope.
-  programs.gamescope = {
-    enable = true;
-  };
-  programs.steam.gamescopeSession = {
-    enable = true;
-    env = {
-      WLR_RENDERER = "vulkan";
-      DXVK_HDR = "1";
-      ENABLE_GAMESCOPE_WSI = "1";
-    };
-    args = [ "--hdr-enabled" "-e" ];
-  };
 
   # Install Spicetify.
   programs.spicetify =
@@ -170,15 +167,6 @@
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
-
-  # Overlay WSI Gamescope
-  nixpkgs.overlays = [
-  (final: prev: {
-    gamescope = (prev.gamescope.override { enableWsi = true; }).overrideAttrs (old: {
-      mesonInstallFlags = [];
-    });
-  })
-];
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
