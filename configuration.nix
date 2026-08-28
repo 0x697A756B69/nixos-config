@@ -15,15 +15,18 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   services.udev.extraRules = ''
-    SUBSYSTEMS=="usb", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="f508", MODE="0666", GROUP="users"
-  '';
+  # Dongle USB custom (VID:PID 3554:f508) — accès utilisateur
+  SUBSYSTEMS=="usb", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="f508", MODE="0666", GROUP="users"
+
+  # Même device — désactive l'autosuspend de façon persistante
+  SUBSYSTEM=="usb", ATTR{idVendor}=="3554", ATTR{idProduct}=="f508", TEST=="power/control", ATTR{power/control}="on"
+'';
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages;
 
   boot.kernelParams = [
-    "usbcore.autosuspend=-1"
-    "usbcore.quirks=3554:f508:k"
-  ];
+  "usbcore.quirks=3554:f508:k"
+];
  
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -34,6 +37,10 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
+
+  # Enable bluethooth
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.powerOnBoot = true;
 
   # Set your time zone.
   time.timeZone = "Europe/Paris";
@@ -130,7 +137,21 @@
   
   programs.gamemode.enable = true;
 
-  # Install Spicetify
+  # Instaaaall gamescope.
+  programs.gamescope = {
+    enable = true;
+  };
+  programs.steam.gamescopeSession = {
+    enable = true;
+    env = {
+      WLR_RENDERER = "vulkan";
+      DXVK_HDR = "1";
+      ENABLE_GAMESCOPE_WSI = "1";
+    };
+    args = [ "--hdr-enabled" "-e" ];
+  };
+
+  # Install Spicetify.
   programs.spicetify =
     let spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.system};
     in {
