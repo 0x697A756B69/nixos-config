@@ -171,6 +171,15 @@
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
+  # Overlay WSI Gamescope
+  nixpkgs.overlays = [
+  (final: prev: {
+    gamescope = (prev.gamescope.override { enableWsi = true; }).overrideAttrs (old: {
+      mesonInstallFlags = [];
+    });
+  })
+];
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
