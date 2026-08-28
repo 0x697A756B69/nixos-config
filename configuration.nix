@@ -181,6 +181,11 @@
   discord
   protonup-qt
   git
+  curl 
+  unzip
+  cabextract
+  p7zip
+  file
   ];
 
   #List packages installed in steam profil
