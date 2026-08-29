@@ -75,7 +75,8 @@ in
             function()
             hl.exec_cmd("${py}/bin/python ${core} 1.6 > /tmp/infinite-desktop.log 2>&1")
             hl.exec_cmd("mpvpaper -o 'no-audio loop' DP-4 ${wallpaper}")
-            end
+            h1.exec_cmd("waybar")
+	    end
           '')
         ];
       };

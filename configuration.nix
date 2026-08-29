@@ -169,37 +169,48 @@
     };
 
 
-  # Install Nixvim.
   programs.nixvim = {
     enable = true;
 
+    # lualine existant
     plugins.lualine.enable = true;
 
-    # Configuration de l'explorateur de fichiers à gauche
+    # Ajout des icônes pour un rendu visuel complet
+    plugins.web-devicons.enable = true;
+
+    # Configuration avancée de Neo-tree
     plugins.neo-tree = {
       enable = true;
-      window.position = "left"; # Place le volet de fichiers sur le côté gauche
+      window.position = "left";
+    
+      # Active la synchronisation avec le fichier actuellement édité
+      filesystem.followCurrentFile.enabled = true;
+
+      # Ajoute la barre d'onglets en haut de l'explorateur (Fichiers, Git, Buffers)
+      sourceSelector = {
+        winbar = true; # Affiche les onglets en haut du volet
+        statusline = false;
+      };
     };
 
-    # Raccourci clavier (Espace + e) pour ouvrir/fermer l'explorateur
+    # Raccourcis clavier améliorés (Espace + e pour les fichiers, Espace + g pour Git)
     keymaps = [
       {
         mode = "n";
         key = "<leader>e";
-        action = "<cmd>Neotree toggle<cr>";
-        options.desc = "Ouvrir/Fermer l'explorateur de fichiers";
+        action = "<cmd>Neotree toggle filesystem left<cr>";
+        options.desc = "Explorateur de fichiers";
+      }
+      {
+        mode = "n";
+        key = "<leader>g";
+        action = "<cmd>Neotree toggle git_status left<cr>";
+        options.desc = "Statut Git de l'explorateur";
       }
     ];
 
-    # Ajout du plugin pour Discord via nixpkgs
-    extraPlugins = with pkgs.vimPlugins; [
-      cord-nvim
-    ];
-
-    # Initialisation de cord.nvim
-    extraConfigLua = ''
-      require('cord').setup({})
-    '';
+    extraPlugins = with pkgs.vimPlugins; [ cord-nvim ];
+    extraConfigLua = "require('cord').setup({})";
   };
 
 
