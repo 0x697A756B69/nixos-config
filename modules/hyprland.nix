@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, self, ... }:
 
 let
   mainMod = "SUPER";
@@ -8,7 +8,7 @@ let
   infinite = config.programs.hyprland-infinite.package;
   core = "${infinite}/lib/hyprland-infinite/infinite_desktop_core.py";
   py = (pkgs.python3.withPackages (ps: [ ps.evdev ]));
-  wallpaper = ../../../modules/wallpapers/wallpaper_upscaled_2k.mp4;
+  wallpaper = ${self}/modules/wallpapers/wallpaper_upscaled_2k.mp4;
 in
 {
   wayland.windowManager.hyprland = {
