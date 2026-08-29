@@ -13,9 +13,13 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nixvim = {
+      url = "github:nix-community/nixvim";
+    };
   };
 
-  outputs = { self, nixpkgs, spicetify-nix, home-manager, ... }@inputs: {
+  outputs = { self, nixpkgs, spicetify-nix, home-manager, nixvim, ... }@inputs: {
 
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -31,7 +35,9 @@
           home-manager.useUserPackages = true;
           home-manager.extraSpecialArgs = { inherit inputs; };
           home-manager.users.izuki = import ./home.nix;
+          home-manager.backupFileExtension = "backup";
         }
+        nixvim.nixosModules.nixvim
       ];
     };
   };

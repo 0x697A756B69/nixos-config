@@ -165,8 +165,23 @@
       colorScheme = "mocha";
     };
 
+  # Install Nixvim.
+  programs.nixvim = {
+    enable = true;
+
+    plugins.lualine.enable = true;
+  };
+
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
+
+  programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = with pkgs; [
+    stdenv.cc.cc
+    zlib
+    glib
+  ];
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -177,6 +192,17 @@
   vscodium
   discord
   protonup-qt
+  (symlinkJoin {
+    name = "modrinth-app";
+    paths = [ modrinth-app ];
+    nativeBuildInputs = [ makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/ModrinthApp \
+        --set WEBKIT_DISABLE_DMABUF_RENDERER 1
+    '';
+  })
+  temurin-jre-bin-21  # Minecraft
+  temurin-jre-bin-25  # Minecraft 
   git
   curl 
   unzip
