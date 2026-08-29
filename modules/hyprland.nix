@@ -8,6 +8,7 @@ let
   infinite = config.programs.hyprland-infinite.package;
   core = "${infinite}/lib/hyprland-infinite/infinite_desktop_core.py";
   py = (pkgs.python3.withPackages (ps: [ ps.evdev ]));
+  wallpaper = ../../../modules/wallpapers/wallpaper_upscaled_2k.mp4;
 in
 {
   wayland.windowManager.hyprland = {
@@ -18,7 +19,7 @@ in
     settings = {
       monitor = {
         output = "";
-        mode = "preferred";
+        mode = "2560x1440@280";
         position = "auto";
         scale = 1;
       };
@@ -27,7 +28,7 @@ in
         { _args = [ "${mainMod} + Return" (inline "hl.dsp.exec_cmd(\"${terminal}\")") ]; }
         { _args = [ "${mainMod} + R"      (inline "hl.dsp.exec_cmd(\"${menu}\")") ]; }
         { _args = [ "${mainMod} + Q"      (inline "hl.dsp.window.close()") ]; }
-        { _args = [ "${mainMod} + M"      (inline "hl.dsp.exec_cmd(\"hyprshutdown\")") ]; }
+        { _args = [ "${mainMod} + M"      (inline "hl.dsp.exit()") ]; }
         { _args = [ "${mainMod} + V"      (inline "hl.dsp.window.float({ action = \"toggle\" })") ]; }
         { _args = [ "${mainMod} + F"      (inline "hl.dsp.window.fullscreen({ action = \"toggle\" })") ]; }
 
@@ -63,6 +64,8 @@ in
         { _args = [ "${mainMod} + CTRL + right" (inline "hl.dsp.exec_cmd(\"resize_window right\")") { repeating = true; } ]; }
         { _args = [ "${mainMod} + CTRL + up"    (inline "hl.dsp.exec_cmd(\"resize_window up\")")    { repeating = true; } ]; }
         { _args = [ "${mainMod} + CTRL + down"  (inline "hl.dsp.exec_cmd(\"resize_window down\")")  { repeating = true; } ]; }
+        # --- Wallpaper animé: restart mpvpaper ---
+        { _args = [ "${mainMod} + B"      (inline "hl.dsp.exec_cmd(\"pkill mpvpaper; sleep 0.2; mpvpaper -o 'no-audio loop' DP-4 ${wallpaper}\")") ]; }
       ];
 
       on = {
@@ -70,7 +73,8 @@ in
           "hyprland.start"
           (inline ''
             function()
-              hl.exec_cmd("${py}/bin/python ${core} 1.6 > /tmp/infinite-desktop.log 2>&1")
+            hl.exec_cmd("${py}/bin/python ${core} 1.6 > /tmp/infinite-desktop.log 2>&1")
+            hl.exec_cmd("mpvpaper -o 'no-audio loop' DP-4 ${wallpaper}")
             end
           '')
         ];

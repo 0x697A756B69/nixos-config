@@ -67,10 +67,10 @@
   # You can disable this if you're only using the Wayland session.
   services.xserver.enable = true;
 
-  # Enable the KDE Plasma Desktop Environment.
+  # Enable the Hyprland Desktop Environment.
   services.displayManager.sddm.enable = true;
-  services.desktopManager.plasma6.enable = true;
-
+  services.displayManager.defaultSession = "hyprland";
+  services.desktopManager.plasma6.enable = false;
   # Configure Nvidia Driver
   hardware.graphics.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
@@ -120,7 +120,7 @@
   users.users."izuki" = {
     isNormalUser = true;
     description = "izuki";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "input" ];
     packages = with pkgs; [
       kdePackages.kate
     #  thunderbird

@@ -40,7 +40,8 @@ in
     description = "Paquet des scripts hyprland-infinite-desktop-v2";
   };
 
-  config.programs.hyprland-infinite.package = pkg;
-
-  home.packages = [ pkg ];
+  config = {
+    programs.hyprland-infinite.package = pkg;
+    home.packages = [ pkg ];
+  };
 }
