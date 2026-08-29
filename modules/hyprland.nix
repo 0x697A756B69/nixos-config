@@ -16,6 +16,10 @@ in
         ", preferred, auto, auto"
       ];
 
+      exec-once = [
+        "kitty"
+      ];
+
       general = {
         gaps_in = 5;
         gaps_out = 10;
