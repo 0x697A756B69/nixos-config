@@ -93,5 +93,9 @@
         color: #94e2d5;
       }
     '';
+
+    systemd = {
+      enable = true;
+    };
   };
 }
