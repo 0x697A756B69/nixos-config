@@ -147,6 +147,9 @@
   
   programs.gamemode.enable = true;
 
+  programs.steam.extraCompatPackages = [ pkgs.steamtinkerlaunch ];
+
+
 
   # Install Spicetify.
   programs.spicetify =
@@ -211,6 +214,7 @@
   cabextract
   p7zip
   file
+  steamtinkerlaunch
   ];
 
   #List packages installed in steam profil
