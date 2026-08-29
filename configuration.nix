@@ -190,7 +190,9 @@
   #  wget
 
   vscodium
+  nixd
   discord
+  opencode-desktop
   protonup-qt
   (symlinkJoin {
     name = "modrinth-app";
