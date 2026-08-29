@@ -168,11 +168,38 @@
       colorScheme = "mocha";
     };
 
+
   # Install Nixvim.
   programs.nixvim = {
     enable = true;
 
     plugins.lualine.enable = true;
+
+    # Configuration de l'explorateur de fichiers à gauche
+    plugins.neo-tree = {
+      enable = true;
+      window.position = "left"; # Place le volet de fichiers sur le côté gauche
+    };
+
+    # Raccourci clavier (Espace + e) pour ouvrir/fermer l'explorateur
+    keymaps = [
+      {
+        mode = "n";
+        key = "<leader>e";
+        action = "<cmd>Neotree toggle<cr>";
+        options.desc = "Ouvrir/Fermer l'explorateur de fichiers";
+      }
+    ];
+
+    # Ajout du plugin pour Discord via nixpkgs
+    extraPlugins = with pkgs.vimPlugins; [
+      cord-nvim
+    ];
+
+    # Initialisation de cord.nvim
+    extraConfigLua = ''
+      require('cord').setup({})
+    '';
   };
 
 
