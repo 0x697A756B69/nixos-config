@@ -42,13 +42,6 @@
           tooltip-format = "{} used";
         };
 
-        battery = {
-          interval = 30;
-          format = "{capacity}%";
-          format-charging = "{capacity}% ";
-          format-discharging = "{capacity}%";
-        };
-
         tray = {
           icon-size = 18;
           spacing = 6;
