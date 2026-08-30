@@ -23,8 +23,11 @@
         ];
         # Centre : 3 ronds workspaces (événementiel)
         modules-center = [ "custom/ws1" "custom/ws2" "custom/ws3" ];
-        # Droite : cpu + ram + volume + bt + heure + power
+        # Droite : reseau + HDR + cpu + ram + volume + bt + heure + power
         modules-right = [
+          "network#wifi"
+          "network#ethernet"
+          "custom/hdr"
           "cpu"
           "memory"
           "pulseaudio"
@@ -32,7 +35,6 @@
           "clock"
           "custom/power"
         ];
-
         "custom/logo" = {
           format = "";
           tooltip = false;
@@ -130,6 +132,26 @@ pkill -RTMIN+1 waybar''}";
           on-click = "power-menu";
           tooltip = false;
         };
+        "network#wifi" = {
+          interface = "wlp*";
+          format = "{icon}";
+          format-icons = [ "󰤯" "󰤟" "󰤢" "󰤨" ];
+          tooltip-format = "{essid} ({signalStrength}%)";
+          tooltip = false;
+        };
+        "network#ethernet" = {
+          interface = "en*";
+          format = "{icon}";
+          format-icons = [ "󰈀" ];
+          tooltip-format = "{ipaddr}";
+          tooltip = false;
+        };
+        "custom/hdr" = {
+          exec = "wb-hdr";
+          on-click = "wb-hdr toggle";
+          signal = 10;
+          tooltip = false;
+        };
       };
     };
 
@@ -162,13 +184,13 @@ pkill -RTMIN+1 waybar''}";
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-center {
-        padding: 0 70px;
+        padding: 0 40px;
         margin: 0 16px;
         background: rgba(30, 30, 46, 0.9);
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-right {
-        padding: 0 65px;
+        padding: 0 50px;
         background: rgba(30, 30, 46, 0.9);
         border-radius: 0 0 16px 16px;
       }
@@ -221,6 +243,17 @@ pkill -RTMIN+1 waybar''}";
         color: #f38ba8;
         font-size: 20px;
       }
+
+      /* --- Réseau + HDR --- */
+      #network.wifi { padding: 0 10px; color: #a6adc8; }
+      #network.ethernet { padding: 0 10px; color: #a6adc8; }
+      #custom-hdr {
+        padding: 0 10px;
+        font-size: 13px;
+        font-weight: bold;
+      }
+      #custom-hdr.hdr-on { color: #f38ba8; }
+      #custom-hdr.hdr-off { color: #45475a; }
     '';
 
     systemd = {
