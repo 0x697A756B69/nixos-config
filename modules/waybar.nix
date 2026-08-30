@@ -155,9 +155,12 @@ pkill -RTMIN+1 waybar''}";
         color: #cdd6f4;
       }
 
-      /* --- Encoches encore plus larges --- */
+      /* --- Encoches : largeurs nombre d'or (écran 2560, ratio φ) --- */
       #waybar .modules-left {
-        padding: 0 28px;
+        padding: 0 8px;
+        min-width: 231px;
+        max-width: 231px;
+        justify-content: space-between;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
         border-radius: 0 0 16px 16px;
@@ -165,12 +168,18 @@ pkill -RTMIN+1 waybar''}";
       #waybar .modules-center {
         padding: 0 46px;
         margin: 0 16px;
+        min-width: 373px;
+        max-width: 373px;
+        justify-content: center;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-right {
-        padding: 0 28px;
+        padding: 0 8px;
+        min-width: 604px;
+        max-width: 604px;
+        justify-content: center;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
         border-radius: 0 0 16px 16px;
@@ -178,7 +187,7 @@ pkill -RTMIN+1 waybar''}";
 
       /* --- Gauche --- */
       #custom-logo {
-        padding: 0 12px;
+        padding: 0 6px;
         font-size: 18px;
         color: #89b4fa;
       }
@@ -188,7 +197,7 @@ pkill -RTMIN+1 waybar''}";
       }
       #custom-prev, #custom-next { color: #a6adc8; }
       #custom-playpause { color: #a6e3a1; }
-      #custom-music { padding: 0 12px; color: #a6adc8; }
+      #custom-music { padding: 0 6px; color: #a6adc8; }
       #custom-music.playing { color: #a6e3a1; }
       #custom-music.paused { color: #f9e2af; }
 
