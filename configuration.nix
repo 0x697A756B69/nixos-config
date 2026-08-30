@@ -343,6 +343,7 @@
   p7zip
   file
   steamtinkerlaunch
+  btop
   ];
 
   #List packages installed in steam profil

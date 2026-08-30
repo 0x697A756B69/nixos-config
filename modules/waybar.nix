@@ -8,9 +8,9 @@
       mainBar = {
         layer = "top";
         position = "top";
-        height = 30;
+        height = 32;
         margin-top = 0;
-        spacing = 6;
+        spacing = 8;
 
         # Gauche : logo + menu + musique
         modules-left = [
@@ -21,7 +21,7 @@
           "custom/next"
           "custom/music"
         ];
-        # Centre : 3 ronds workspaces
+        # Centre : 3 ronds workspaces (événementiel)
         modules-center = [ "custom/ws1" "custom/ws2" "custom/ws3" ];
         # Droite : cpu + ram + volume + bt + heure + power
         modules-right = [
@@ -62,7 +62,7 @@ pkill -RTMIN+1 waybar''}";
           tooltip = false;
         };
         "custom/next" = {
-          format = "󰓙";
+          format = "󰓗";
           on-click = "playerctl next";
           tooltip = false;
         };
@@ -72,20 +72,23 @@ pkill -RTMIN+1 waybar''}";
           return-type = "json";
         };
         "custom/ws1" = {
-          exec = "wb-wsdot 1";
-          interval = 1;
+          exec = "wb-wsreader 1";
+          signal = 4;
+          interval = 10;
           return-type = "json";
           tooltip = false;
         };
         "custom/ws2" = {
-          exec = "wb-wsdot 2";
-          interval = 1;
+          exec = "wb-wsreader 2";
+          signal = 4;
+          interval = 10;
           return-type = "json";
           tooltip = false;
         };
         "custom/ws3" = {
-          exec = "wb-wsdot 3";
-          interval = 1;
+          exec = "wb-wsreader 3";
+          signal = 4;
+          interval = 10;
           return-type = "json";
           tooltip = false;
         };
@@ -112,10 +115,11 @@ pkill -RTMIN+1 waybar''}";
         };
         "custom/bt" = {
           exec = "wb-bt";
-          on-click = "wb-bt toggle";
+          on-click = "rofi-bluetooth -theme $HOME/.config/rofi/catppuccin-mocha.rasi";
           signal = 3;
           interval = 30;
           return-type = "json";
+          tooltip = false;
         };
         clock = {
           format = "{:%H:%M}";
@@ -132,7 +136,7 @@ pkill -RTMIN+1 waybar''}";
     style = ''
       * {
         font-family: "JetBrains Mono Nerd Font";
-        font-size: 13px;
+        font-size: 14px;
         border: none;
         border-radius: 0;
         min-height: 0;
@@ -151,22 +155,22 @@ pkill -RTMIN+1 waybar''}";
         color: #cdd6f4;
       }
 
-      /* --- Encoches plus larges --- */
+      /* --- Encoches encore plus larges --- */
       #waybar .modules-left {
-        padding: 0 22px;
+        padding: 0 28px;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-center {
-        padding: 0 34px;
+        padding: 0 46px;
         margin: 0 16px;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-right {
-        padding: 0 22px;
+        padding: 0 28px;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
         border-radius: 0 0 16px 16px;
@@ -174,35 +178,35 @@ pkill -RTMIN+1 waybar''}";
 
       /* --- Gauche --- */
       #custom-logo {
-        padding: 0 10px;
-        font-size: 16px;
+        padding: 0 12px;
+        font-size: 18px;
         color: #89b4fa;
       }
       #custom-settings, #custom-prev, #custom-playpause, #custom-next {
-        padding: 0 8px;
+        padding: 0 9px;
         color: #cdd6f4;
       }
       #custom-prev, #custom-next { color: #a6adc8; }
       #custom-playpause { color: #a6e3a1; }
-      #custom-music { padding: 0 10px; color: #a6adc8; }
+      #custom-music { padding: 0 12px; color: #a6adc8; }
       #custom-music.playing { color: #a6e3a1; }
       #custom-music.paused { color: #f9e2af; }
 
-      /* --- Centre: ronds clairs flottants, rectangle actif flottant --- */
+      /* --- Centre: ronds flottants + rectangle actif flottant --- */
       #custom-ws1, #custom-ws2, #custom-ws3 {
-        margin: 5px 4px;
-        font-size: 12px;
+        margin: 7px 5px;
+        font-size: 13px;
         color: #89b4fa;
         background: transparent;
         border-radius: 7px;
-        min-width: 16px;
-        min-height: 12px;
+        min-width: 18px;
+        min-height: 14px;
       }
       #custom-ws1.active, #custom-ws2.active, #custom-ws3.active {
         color: #1e1e2e;
         background: rgba(137, 180, 250, 0.55);
-        min-width: 34px;
-        min-height: 12px;
+        min-width: 38px;
+        min-height: 14px;
       }
 
       /* --- Droite --- */
@@ -210,16 +214,17 @@ pkill -RTMIN+1 waybar''}";
       #memory { padding: 0 10px; color: #f9e2af; }
       #pulseaudio { padding: 0 10px; color: #94e2d5; }
       #pulseaudio.muted { color: #f38ba8; }
-      #custom-bt { padding: 0 10px; font-size: 14px; }
+      #custom-bt { padding: 0 10px; font-size: 15px; }
       #custom-bt.bt-on { color: #89b4fa; }
       #custom-bt.bt-off { color: #45475a; }
       #clock { padding: 0 10px; color: #cdd6f4; }
       #custom-power {
-        padding: 0 10px;
+        padding: 0 12px;
         color: #f38ba8;
-        font-size: 15px;
+        font-size: 17px;
       }
     '';
+
     systemd = {
       enable = true;
     };

@@ -31,6 +31,7 @@
     jq
     hyprlock
     pamixer
+    socat
 
     # --- Scripts waybar (encoches) ---
     (pkgs.writeShellScriptBin "wb-music" ''
@@ -105,18 +106,37 @@
       fi
     '')
 
-    (pkgs.writeShellScriptBin "wb-wsdot" ''
+    (pkgs.writeShellScriptBin "wb-wsd" ''
       #!/usr/bin/env bash
-      ws="$1"
-      active=$(hyprctl -j activeworkspace 2>/dev/null | grep '"id"' | head -1 | sed 's/.*"id": *\([0-9]*\).*/\1/')
-      [ -z "$active" ] && active="1"
-      if [ "$ws" = "$active" ]; then
-        echo '{"text":" ","class":"active"}'
-      else
-        echo '{"text":"●","class":"inactive"}'
-      fi
+      CACHE="$HOME/.cache/ws"
+      SOCK="/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
+      update() {
+        local id w
+        id=$(hyprctl -j activeworkspace 2>/dev/null | grep '"id"' | head -1 | sed 's/.*"id": *\([0-9]*\).*/\1/')
+        [ -z "$id" ] && id="1"
+        for w in 1 2 3; do
+          if [ "$w" = "$id" ]; then
+            printf '{"text":" ","class":"active"}\n' > "$CACHE$w"
+          else
+            printf '{"text":"●","class":"inactive"}\n' > "$CACHE$w"
+          fi
+        done
+        pkill -RTMIN+4 waybar 2>/dev/null
+      }
+      update
+      [ -S "$SOCK" ] || exit 0
+      socat -U - "UNIX-CONNECT:$SOCK" | while read -r ev; do
+        case "$ev" in
+          workspacev2*|focusedmonv2*|activeworkspace*|workspace*|focusedmon*) update ;;
+        esac
+      done
     '')
 
+    (pkgs.writeShellScriptBin "wb-wsreader" ''
+      #!/usr/bin/env bash
+      f="$HOME/.cache/ws$1"
+      if [ -f "$f" ]; then cat "$f"; else printf '{"text":"●","class":"inactive"}\n'; fi
+    '')
     (pkgs.writeShellScriptBin "power-menu" ''
       #!/usr/bin/env bash
       options=$'⏻ Éteindre\n󰜉 Redémarrer\n󰒲 Veille\n Verrouiller\n󰗼 Quitter Hyprland'
