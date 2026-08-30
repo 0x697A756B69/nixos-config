@@ -209,8 +209,8 @@
       }
     ];
 
-    extraPlugins = with pkgs.vimPlugins; [ cord-nvim ];
-    extraConfigLua = "require('cord').setup({})";
+    extraPlugins = with pkgs.vimPlugins; [ neocord ];
+    extraConfigLua = "require('neocord').setup({})";
   };
 
 
