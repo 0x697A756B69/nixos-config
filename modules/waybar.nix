@@ -23,15 +23,15 @@
         ];
         # Centre : 3 ronds workspaces (événementiel)
         modules-center = [ "custom/ws1" "custom/ws2" "custom/ws3" ];
-        # Droite : reseau + HDR + cpu + ram + volume + bt + heure + power
+        # Droite : cpu + ram + volume + wifi + ethernet + bt + HDR + heure + power
         modules-right = [
-          "network#wifi"
-          "network#ethernet"
-          "custom/hdr"
           "cpu"
           "memory"
           "pulseaudio"
+          "network#wifi"
+          "network#ethernet"
           "custom/bt"
+          "custom/hdr"
           "clock"
           "custom/power"
         ];
@@ -133,21 +133,23 @@ pkill -RTMIN+1 waybar''}";
           tooltip = false;
         };
         "network#wifi" = {
+          # Wifi : l'icône varie selon la puissance du signal
           interface = "wlp*";
-          format = "{icon}";
+          format-wifi = "{icon}";
           format-icons = [ "󰤯" "󰤟" "󰤢" "󰤨" ];
-          tooltip-format = "{essid} ({signalStrength}%)";
+          format-disconnected = "";
           tooltip = false;
         };
         "network#ethernet" = {
+          # Ethernet : le câble branché supplante l'icône wifi
           interface = "en*";
-          format = "{icon}";
-          format-icons = [ "󰈀" ];
-          tooltip-format = "{ipaddr}";
+          format-ethernet = "󰈀";
+          format-disconnected = "";
           tooltip = false;
         };
         "custom/hdr" = {
           exec = "wb-hdr";
+          return-type = "json";
           on-click = "wb-hdr toggle";
           signal = 10;
           tooltip = false;
@@ -166,7 +168,7 @@ pkill -RTMIN+1 waybar''}";
       }
 
       tooltip {
-        background: #1e1e2e;
+        background: #11111b;
         border: 1px solid #313244;
         border-radius: 8px;
         color: #cdd6f4;
@@ -177,83 +179,79 @@ pkill -RTMIN+1 waybar''}";
         color: #cdd6f4;
       }
 
-      /* --- Encoches : sans bordure, larges φ --- */
+      /* --- Encoches : fond plein sombre --- */
       #waybar .modules-left {
-        padding: 0 8px;
-        background: rgba(30, 30, 46, 0.9);
+        padding: 0 12px;
+        background: #11111b;
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-center {
-        padding: 0 40px;
-        margin: 0 16px;
-        background: rgba(30, 30, 46, 0.9);
+        padding: 0 4px;
+        margin: 0 8px;
+        background: #11111b;
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-right {
-        padding: 0 50px;
-        background: rgba(30, 30, 46, 0.9);
+        padding: 0 14px;
+        background: #11111b;
         border-radius: 0 0 16px 16px;
       }
 
-      /* --- Gauche --- */
+      /* --- Gauche : compact, logo NixOS grand et aéré, mono-clair --- */
       #custom-logo {
         padding: 0 6px;
-        margin-right: 8px;
+        margin-right: 16px;
         font-size: 22px;
-        color: #89b4fa;
-      }
-      #custom-settings, #custom-prev, #custom-playpause, #custom-next {
-        padding: 0 12px;
         color: #cdd6f4;
       }
-      #custom-prev, #custom-next { color: #a6adc8; }
-      #custom-playpause { color: #a6e3a1; }
-      #custom-music { padding: 0 8px; color: #a6adc8; }
-      #custom-music.playing { color: #a6e3a1; }
-      #custom-music.paused { color: #f9e2af; }
+      #custom-settings, #custom-prev, #custom-playpause, #custom-next {
+        padding: 0 7px;
+        font-size: 14px;
+        color: #cdd6f4;
+      }
+      #custom-music { padding: 0 5px; font-size: 13px; color: #a6adc8; }
 
-      /* --- Centre: ronds imposants + rectangle actif --- */
+      /* --- Centre : encoche serrée, rectangle actif sobre, points tassés --- */
       #custom-ws1, #custom-ws2, #custom-ws3 {
-        margin: 8px 6px;
-        font-size: 16px;
-        color: #89b4fa;
+        margin: 8px 2px;
+        font-size: 14px;
+        color: #cdd6f4;
         background: transparent;
         border-radius: 9px;
-        min-width: 24px;
-        min-height: 18px;
+        min-width: 22px;
+        min-height: 22px;
       }
       #custom-ws1.active, #custom-ws2.active, #custom-ws3.active {
+        margin: 8px 2px;
         color: #1e1e2e;
-        background: rgba(137, 180, 250, 0.55);
+        background: #cdd6f4;
         min-width: 48px;
-        min-height: 18px;
+        min-height: 22px;
       }
 
-      /* --- Droite --- */
-      #cpu { padding: 0 12px; color: #a6e3a1; }
-      #memory { padding: 0 12px; color: #f9e2af; }
-      #pulseaudio { padding: 0 12px; color: #94e2d5; }
-      #pulseaudio.muted { color: #f38ba8; }
-      #custom-bt { padding: 0 12px; font-size: 17px; }
-      #custom-bt.bt-on { color: #89b4fa; }
-      #custom-bt.bt-off { color: #45475a; }
-      #clock { padding: 0 12px; color: #cdd6f4; }
+      /* --- Droite : compact, mono-clair --- */
+      #cpu { padding: 0 7px; font-size: 13px; color: #cdd6f4; }
+      #memory { padding: 0 7px; font-size: 13px; color: #cdd6f4; }
+      #pulseaudio { padding: 0 7px; font-size: 13px; color: #cdd6f4; }
+      #pulseaudio.muted { color: #6c7086; }
+      #custom-bt { padding: 0 7px; font-size: 13px; color: #cdd6f4; }
+      #custom-bt.bt-off { color: #6c7086; }
+      #clock { padding: 0 7px; font-size: 13px; color: #cdd6f4; }
       #custom-power {
-        padding: 0 12px;
-        color: #f38ba8;
-        font-size: 20px;
+        padding: 0 7px;
+        color: #cdd6f4;
+        font-size: 13px;
       }
 
       /* --- Réseau + HDR --- */
-      #network.wifi { padding: 0 10px; color: #a6adc8; }
-      #network.ethernet { padding: 0 10px; color: #a6adc8; }
+      #network.wifi, #network.ethernet { padding: 0 6px; font-size: 13px; color: #cdd6f4; }
       #custom-hdr {
-        padding: 0 10px;
-        font-size: 13px;
+        padding: 0 7px;
+        font-size: 12px;
         font-weight: bold;
       }
-      #custom-hdr.hdr-on { color: #f38ba8; }
-      #custom-hdr.hdr-off { color: #45475a; }
+      #custom-hdr.hdr-on { color: #cdd6f4; }
+      #custom-hdr.hdr-off { color: #6c7086; }
     '';
 
     systemd = {
