@@ -163,14 +163,14 @@ pkill -RTMIN+1 waybar''}";
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-center {
-        padding: 0 135px;
+        padding: 0 60px;
         margin: 0 16px;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-right {
-        padding: 0 125px;
+        padding: 0 55px;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
         border-radius: 0 0 16px 16px;
