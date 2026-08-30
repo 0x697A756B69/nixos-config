@@ -23,10 +23,28 @@ in
         position = "auto";
         scale = 1;
       };
-      input = {
-        kb_layout = "fr";
-      };
 
+      config = {
+        general = {
+          gaps_in = 5;
+          gaps_out = 10;
+          border_size = 2;
+          col = {
+            active_border = "rgba(89b4faee)";
+            inactive_border = "rgba(45475aaa)";
+          };
+          layout = "dwindle";
+        };
+        decoration = {
+          rounding = 8;
+        };
+        animations = {
+          enabled = true;
+        };
+        input = {
+          kb_layout = "fr";
+        };
+      };
 
       bind = [
         { _args = [ "${mainMod} + Return" (inline "hl.dsp.exec_cmd(\"${terminal}\")") ]; }
@@ -35,7 +53,7 @@ in
         { _args = [ "${mainMod} + M"      (inline "hl.dsp.exit()") ]; }
         { _args = [ "${mainMod} + V"      (inline "hl.dsp.window.float({ action = \"toggle\" })") ]; }
         { _args = [ "${mainMod} + F"      (inline "hl.dsp.window.fullscreen({ action = \"toggle\" })") ]; }
-        
+
         # Fallback grappe F10/F11/F12 si la machine n'émet pas XF86Audio*
         # --- Volume : Fn+F10 baisser, Fn+F11 monter, Fn+F12 mute ---
         { _args = [ "XF86AudioLowerVolume" (inline "hl.dsp.exec_cmd(\"pamixer -d 5\")") ]; }
@@ -78,17 +96,19 @@ in
         { _args = [ "${mainMod} + CTRL + right" (inline "hl.dsp.exec_cmd(\"resize_window right\")") { repeating = true; } ]; }
         { _args = [ "${mainMod} + CTRL + up"    (inline "hl.dsp.exec_cmd(\"resize_window up\")")    { repeating = true; } ]; }
         { _args = [ "${mainMod} + CTRL + down"  (inline "hl.dsp.exec_cmd(\"resize_window down\")")  { repeating = true; } ]; }
-        # --- Wallpaper animé: restart mpvpaper ---
-        { _args = [ "${mainMod} + B"      (inline "hl.dsp.exec_cmd(\"pkill mpvpaper; sleep 0.2; mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 ${wallpaper}\")") ]; }      ];
 
-            on = {
+        # --- Wallpaper animé: restart mpvpaper ---
+        { _args = [ "${mainMod} + B" (inline "hl.dsp.exec_cmd(\"pkill mpvpaper; sleep 0.2; mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 ${wallpaper}\")") ]; }
+      ];
+
+      on = {
         _args = [
           "hyprland.start"
           (inline ''
             function()
-            hl.exec_cmd("${py}/bin/python ${core} 1.6 > /tmp/infinite-desktop.log 2>&1")
-            hl.exec_cmd("mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 ${wallpaper}")
-            hl.exec_cmd("wb-wsd")
+              hl.exec_cmd("${py}/bin/python ${core} 1.6 > /tmp/infinite-desktop.log 2>&1")
+              hl.exec_cmd("mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 ${wallpaper}")
+              hl.exec_cmd("wb-wsd")
             end
           '')
         ];
