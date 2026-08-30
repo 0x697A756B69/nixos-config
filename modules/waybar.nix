@@ -5,14 +5,14 @@
     enable = true;
 
     settings = {
-      # ==== ENCOCHE GAUCHE : logo + menu + musique + HDR ====
-      left = {
+      mainBar = {
         layer = "top";
         position = "top";
         height = 30;
         margin-top = 0;
-        margin-left = 0;
-        margin-right = 0;
+        spacing = 4;
+
+        # Gauche : logo + menu + musique + HDR
         modules-left = [
           "custom/logo"
           "custom/settings"
@@ -20,6 +20,17 @@
           "custom/playpause"
           "custom/next"
           "custom/hdr"
+        ];
+        # Centre : 3 ronds workspaces
+        modules-center = [ "custom/wsdot" ];
+        # Droite : cpu + ram + volume + bt + heure + power
+        modules-right = [
+          "cpu"
+          "memory"
+          "pulseaudio"
+          "custom/bt"
+          "clock"
+          "custom/power"
         ];
 
         "custom/logo" = {
@@ -62,42 +73,11 @@ pkill -RTMIN+1 waybar''}";
           interval = 10;
           return-type = "json";
         };
-      };
-
-      # ==== ENCOCHE CENTRE : 3 ronds workspaces ====
-      center = {
-        layer = "top";
-        position = "top";
-        height = 30;
-        margin-top = 0;
-        margin-left = 0;
-        margin-right = 0;
-        modules-center = [ "custom/wsdot" ];
-
         "custom/wsdot" = {
           exec = "wb-wsdot";
           interval = 1;
           return-type = "json";
         };
-      };
-
-      # ==== ENCOCHE DROITE : cpu + ram + volume + bt + heure + power ====
-      right = {
-        layer = "top";
-        position = "top";
-        height = 30;
-        margin-top = 0;
-        margin-left = 0;
-        margin-right = 0;
-        modules-right = [
-          "cpu"
-          "memory"
-          "pulseaudio"
-          "custom/bt"
-          "clock"
-          "custom/power"
-        ];
-
         cpu = {
           interval = 3;
           format = "  {usage}%";
@@ -153,54 +133,69 @@ pkill -RTMIN+1 waybar''}";
         color: #cdd6f4;
       }
 
-      /* --- Encoches : collées en haut, coins bas arrondis --- */
+      /* Barre transparente : juste les 3 encoches visibles */
       window#waybar {
-        background: rgba(30, 30, 46, 0.9);
-        border: 1px solid #313244;
-        border-radius: 0 0 14px 14px;
+        background: transparent;
         color: #cdd6f4;
       }
-      window#waybar.left, window#waybar.right, window#waybar.center {
+
+      /* --- Encoch Gauche (rectangle collé en haut gauche) --- */
+      #waybar .modules-left {
+        padding: 0 12px;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
         border-radius: 0 0 14px 14px;
       }
 
-      /* --- Encoch Gauche --- */
+      /* --- Encoch Centre (pilule fine centrée) --- */
+      #waybar .modules-center {
+        padding: 0 16px;
+        margin: 0 10px;
+        background: rgba(30, 30, 46, 0.9);
+        border: 1px solid #313244;
+        border-radius: 0 0 14px 14px;
+      }
+
+      /* --- Encoch Droite (rectangle collé en haut droite) --- */
+      #waybar .modules-right {
+        padding: 0 12px;
+        background: rgba(30, 30, 46, 0.9);
+        border: 1px solid #313244;
+        border-radius: 0 0 14px 14px;
+      }
+
+      /* --- Modules --- */
       #custom-logo {
-        padding: 0 10px;
+        padding: 0 8px;
         font-size: 16px;
         color: #89b4fa;
       }
       #custom-settings, #custom-prev, #custom-playpause, #custom-next {
-        padding: 0 8px;
+        padding: 0 6px;
         color: #cdd6f4;
       }
       #custom-prev, #custom-next { color: #a6adc8; }
       #custom-playpause { color: #a6e3a1; }
-      #custom-hdr { padding: 0 10px; font-size: 14px; }
+      #custom-hdr { padding: 0 8px; font-size: 14px; }
       #custom-hdr.hdr-on { color: #f9e2af; }
       #custom-hdr.hdr-off { color: #45475a; }
 
-      /* --- Encoch Centre (dots) --- */
       #custom-wsdot {
-        padding: 0 6px;
         color: #cdd6f4;
         font-size: 14px;
         letter-spacing: 2px;
       }
 
-      /* --- Encoch Droite --- */
-      #cpu { padding: 0 10px; color: #a6e3a1; }
-      #memory { padding: 0 10px; color: #f9e2af; }
-      #pulseaudio { padding: 0 10px; color: #94e2d5; }
+      #cpu { padding: 0 8px; color: #a6e3a1; }
+      #memory { padding: 0 8px; color: #f9e2af; }
+      #pulseaudio { padding: 0 8px; color: #94e2d5; }
       #pulseaudio.muted { color: #f38ba8; }
-      #custom-bt { padding: 0 10px; font-size: 14px; }
+      #custom-bt { padding: 0 8px; font-size: 14px; }
       #custom-bt.bt-on { color: #89b4fa; }
       #custom-bt.bt-off { color: #45475a; }
-      #clock { padding: 0 10px; color: #cdd6f4; }
+      #clock { padding: 0 8px; color: #cdd6f4; }
       #custom-power {
-        padding: 0 10px;
+        padding: 0 8px;
         color: #f38ba8;
         font-size: 15px;
       }
