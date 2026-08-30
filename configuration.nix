@@ -196,13 +196,27 @@
     # ---------- Recherche floue (fzf-lua) ----------
     plugins.fzf-lua.enable = true;
 
-    # ---------- Autocomplétion (nvim-cmp -> plugins.cmp) ----------
+    # ---------- Autocomplétion (nvim-cmp -> plugins.cmp) ---------
     plugins.cmp.enable = true;
     plugins.cmp.settings.sources = [
       { name = "nvim_lsp"; }
       { name = "path"; }
       { name = "buffer"; }
     ];
+    plugins.cmp.settings.snippet.expand = ''
+      function(args)
+        require('luasnip').lsp_expand(args.body)
+      end
+    '';
+    plugins.cmp.settings.mapping = {
+      "<C-d>" = "cmp.mapping.scroll_docs(-4)";
+      "<C-f>" = "cmp.mapping.scroll_docs(4)";
+      "<C-Space>" = "cmp.mapping.complete()";
+      "<C-e>" = "cmp.mapping.abort()";
+      "<CR>" = "cmp.mapping.confirm({ select = true })";
+      "<Tab>" = "cmp.mapping(cmp.mapping.select_next_item(), { 'i', 's' })";
+      "<S-Tab>" = "cmp.mapping(cmp.mapping.select_prev_item(), { 'i', 's' })";
+    };
     plugins.cmp-nvim-lsp.enable = true;
     plugins.cmp-path.enable = true;
     plugins.cmp-buffer.enable = true;
@@ -269,10 +283,24 @@
         action = "<cmd>Git<cr>";
         options.desc = "Ouvrir fugitive";
       }
+      {
+        mode = "n";
+        key = "<leader>fw";
+        action = "<cmd>FzfLua live_grep<cr>";
+        options.desc = "Chercher une phrase dans le projet";
+      }
     ];
 
     extraPlugins = with pkgs.vimPlugins; [ ];
-    extraConfigLua = "";
+    extraConfigLua = ''
+      vim.api.nvim_create_autocmd("VimEnter", {
+        callback = function()
+          if vim.fn.argc() == 0 then
+            vim.cmd("Neotree filesystem left")
+          end
+        end,
+      })
+    '';
   };
 
   # Allow unfree packages
