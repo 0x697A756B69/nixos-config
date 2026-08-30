@@ -250,6 +250,7 @@
     plugins.which-key.enable = true;
     plugins.nvim-autopairs.enable = true;
     plugins.comment.enable = true;
+    plugins.cord.enaable = true;
 
     # ---------- Raccourcis ----------
     keymaps = [
