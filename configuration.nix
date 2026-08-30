@@ -223,10 +223,11 @@
       "K" = "hover";
       "gi" = "implementation";
       "gr" = "references";
-      "[d" = "diagnostic_prev";
-      "]d" = "diagnostic_next";
     };
-
+    plugins.lsp.keymaps.diagnostic = {
+      "[d" = "goto_prev";
+      "]d" = "goto_next";
+    };
     # ---------- Git ----------
     plugins.gitsigns.enable = true;
     plugins.fugitive.enable = true;
