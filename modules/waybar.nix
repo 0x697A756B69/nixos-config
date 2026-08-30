@@ -13,7 +13,7 @@
 
         modules-left = [ "hyprland/workspaces" ];
         modules-center = [ "clock" ];
-        modules-right = [ "cpu" "memory" "battery" "tray" ];
+        modules-right = [ "cpu" "memory" "network" "bluetooth" ];
 
         "hyprland/workspaces" = {
           format = "{id}";
@@ -42,11 +42,22 @@
           tooltip-format = "{} used";
         };
 
-        tray = {
-          icon-size = 18;
-          spacing = 6;
+        network = {
+          format-wifi = "{icon} {essid}";
+          format-icons = [ "󰤯" "󰤟" "󰤢" "󰤥" "󰤨" ];
+          format-ethernet = "󰈀";
+          format-disconnected = "󰤮";
+          tooltip-format = "{ifname} | {ipaddr} | {signalStrength}%";
+          on-click = "nm-connection-editor";
         };
-      };
+
+        bluetooth = {
+          format-on = "󰂯";
+          format-off = "󰂲";
+          format-connected = "󰂯 {num_connections}";
+          tooltip-format = "{controller_alias} | {num_connections} apparié(s)";
+          on-click = "blueman-manager";
+        };      };
     };
 
     style = ''
@@ -71,7 +82,7 @@
         color: #89b4fa;
       }
 
-      #clock, #cpu, #memory, #battery, #tray {
+      #clock, #cpu, #memory, #network, #bluetooth {
         padding: 0 10px;
         color: #cdd6f4;
       }
@@ -82,9 +93,7 @@
       #memory {
         color: #f9e2af;
       }
-      #battery {
-        color: #94e2d5;
-      }
+
     '';
 
     systemd = {
