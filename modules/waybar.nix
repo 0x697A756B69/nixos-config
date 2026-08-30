@@ -10,19 +10,19 @@
         position = "top";
         height = 30;
         margin-top = 0;
-        spacing = 4;
+        spacing = 6;
 
-        # Gauche : logo + menu + musique + HDR
+        # Gauche : logo + menu + musique
         modules-left = [
           "custom/logo"
           "custom/settings"
           "custom/prev"
           "custom/playpause"
           "custom/next"
-          "custom/hdr"
+          "custom/music"
         ];
         # Centre : 3 ronds workspaces
-        modules-center = [ "custom/wsdot" ];
+        modules-center = [ "custom/ws1" "custom/ws2" "custom/ws3" ];
         # Droite : cpu + ram + volume + bt + heure + power
         modules-right = [
           "cpu"
@@ -43,49 +43,62 @@
           tooltip = false;
         };
         "custom/prev" = {
-          format = "⏮";
+          format = "󰓕";
           on-click = "playerctl previous";
           tooltip = false;
         };
         "custom/playpause" = {
           exec = "${pkgs.bash}/bin/bash ${pkgs.writeScript "wp" ''#!/usr/bin/env bash
 status=$(playerctl status 2>/dev/null)
-if [ "$status" = "Playing" ]; then echo "⏸"; else echo "▶"; fi''}";
+if [ "$status" = "Playing" ]; then echo "󰏤"; else echo "󰐊"; fi''}";
           interval = 2;
           on-click = "${pkgs.bash}/bin/bash ${pkgs.writeScript "wp2" ''#!/usr/bin/env bash
 playerctl play-pause 2>/dev/null
 sleep 0.2
 status=$(playerctl status 2>/dev/null)
-if [ "$status" = "Playing" ]; then echo "⏸"; else echo "▶"; fi
+if [ "$status" = "Playing" ]; then echo "󰏤"; else echo "󰐊"; fi
 pkill -RTMIN+1 waybar''}";
           signal = 1;
           tooltip = false;
         };
         "custom/next" = {
-          format = "⏭";
+          format = "󰓙";
           on-click = "playerctl next";
           tooltip = false;
         };
-        "custom/hdr" = {
-          exec = "wb-hdr";
-          on-click = "wb-hdr toggle";
-          signal = 2;
-          interval = 10;
-          return-type = "json";
-        };
-        "custom/wsdot" = {
-          exec = "wb-wsdot";
+        "custom/music" = {
+          exec = "wb-music";
           interval = 1;
           return-type = "json";
         };
+        "custom/ws1" = {
+          exec = "wb-wsdot 1";
+          interval = 1;
+          return-type = "json";
+          tooltip = false;
+        };
+        "custom/ws2" = {
+          exec = "wb-wsdot 2";
+          interval = 1;
+          return-type = "json";
+          tooltip = false;
+        };
+        "custom/ws3" = {
+          exec = "wb-wsdot 3";
+          interval = 1;
+          return-type = "json";
+          tooltip = false;
+        };
         cpu = {
           interval = 3;
-          format = "  {usage}%";
+          format = "{icon} {usage}%";
+          format-icons = [ "󰍛" ];
           tooltip = false;
         };
         memory = {
           interval = 5;
-          format = "  {percentage}%";
+          format = "{icon} {percentage}%";
+          format-icons = [ "󰟜" ];
           tooltip = false;
         };
         pulseaudio = {
@@ -133,59 +146,66 @@ pkill -RTMIN+1 waybar''}";
         color: #cdd6f4;
       }
 
-      /* Barre transparente : juste les 3 encoches visibles */
       window#waybar {
         background: transparent;
         color: #cdd6f4;
       }
 
-      /* --- Encoch Gauche (rectangle collé en haut gauche) --- */
+      /* --- Encoches: collées en haut, coins bas arrondis --- */
       #waybar .modules-left {
-        padding: 0 12px;
-        background: rgba(30, 30, 46, 0.9);
-        border: 1px solid #313244;
-        border-radius: 0 0 14px 14px;
-      }
-
-      /* --- Encoch Centre (pilule fine centrée) --- */
-      #waybar .modules-center {
         padding: 0 16px;
-        margin: 0 10px;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
         border-radius: 0 0 14px 14px;
       }
-
-      /* --- Encoch Droite (rectangle collé en haut droite) --- */
+      #waybar .modules-center {
+        padding: 0 24px;
+        margin: 0 12px;
+        background: rgba(30, 30, 46, 0.9);
+        border: 1px solid #313244;
+        border-radius: 0 0 14px 14px;
+      }
       #waybar .modules-right {
-        padding: 0 12px;
+        padding: 0 16px;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
         border-radius: 0 0 14px 14px;
       }
 
-      /* --- Modules --- */
+      /* --- Gauche --- */
       #custom-logo {
-        padding: 0 8px;
+        padding: 0 10px;
         font-size: 16px;
         color: #89b4fa;
       }
       #custom-settings, #custom-prev, #custom-playpause, #custom-next {
-        padding: 0 6px;
+        padding: 0 8px;
         color: #cdd6f4;
       }
       #custom-prev, #custom-next { color: #a6adc8; }
       #custom-playpause { color: #a6e3a1; }
-      #custom-hdr { padding: 0 8px; font-size: 14px; }
-      #custom-hdr.hdr-on { color: #f9e2af; }
-      #custom-hdr.hdr-off { color: #45475a; }
+      #custom-music { padding: 0 8px; color: #a6adc8; }
+      #custom-music.playing { color: #a6e3a1; }
+      #custom-music.paused { color: #f9e2af; }
 
-      #custom-wsdot {
-        color: #cdd6f4;
-        font-size: 14px;
-        letter-spacing: 2px;
+      /* --- Centre: rond <-> rectangle arrondi --- */
+      #custom-ws1, #custom-ws2, #custom-ws3 {
+        margin: 0 3px;
+        font-size: 10px;
+        color: #45475a;
+        background: transparent;
+        border-radius: 5px;
+        min-width: 14px;
+        min-height: 12px;
+      }
+      #custom-ws1.active, #custom-ws2.active, #custom-ws3.active {
+        color: #1e1e2e;
+        background: #89b4fa;
+        min-width: 26px;
+        min-height: 16px;
       }
 
+      /* --- Droite --- */
       #cpu { padding: 0 8px; color: #a6e3a1; }
       #memory { padding: 0 8px; color: #f9e2af; }
       #pulseaudio { padding: 0 8px; color: #94e2d5; }
@@ -195,7 +215,7 @@ pkill -RTMIN+1 waybar''}";
       #custom-bt.bt-off { color: #45475a; }
       #clock { padding: 0 8px; color: #cdd6f4; }
       #custom-power {
-        padding: 0 8px;
+        padding: 0 10px;
         color: #f38ba8;
         font-size: 15px;
       }
