@@ -151,25 +151,25 @@ pkill -RTMIN+1 waybar''}";
         color: #cdd6f4;
       }
 
-      /* --- Encoches: collées en haut, coins bas arrondis --- */
+      /* --- Encoches plus larges --- */
       #waybar .modules-left {
-        padding: 0 16px;
+        padding: 0 22px;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
-        border-radius: 0 0 14px 14px;
+        border-radius: 0 0 16px 16px;
       }
       #waybar .modules-center {
-        padding: 0 24px;
-        margin: 0 12px;
+        padding: 0 34px;
+        margin: 0 16px;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
-        border-radius: 0 0 14px 14px;
+        border-radius: 0 0 16px 16px;
       }
       #waybar .modules-right {
-        padding: 0 16px;
+        padding: 0 22px;
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
-        border-radius: 0 0 14px 14px;
+        border-radius: 0 0 16px 16px;
       }
 
       /* --- Gauche --- */
@@ -184,43 +184,42 @@ pkill -RTMIN+1 waybar''}";
       }
       #custom-prev, #custom-next { color: #a6adc8; }
       #custom-playpause { color: #a6e3a1; }
-      #custom-music { padding: 0 8px; color: #a6adc8; }
+      #custom-music { padding: 0 10px; color: #a6adc8; }
       #custom-music.playing { color: #a6e3a1; }
       #custom-music.paused { color: #f9e2af; }
 
-      /* --- Centre: rond <-> rectangle arrondi --- */
+      /* --- Centre: ronds clairs flottants, rectangle actif flottant --- */
       #custom-ws1, #custom-ws2, #custom-ws3 {
-        margin: 0 3px;
-        font-size: 10px;
-        color: #45475a;
+        margin: 5px 4px;
+        font-size: 12px;
+        color: #89b4fa;
         background: transparent;
-        border-radius: 5px;
-        min-width: 14px;
+        border-radius: 7px;
+        min-width: 16px;
         min-height: 12px;
       }
       #custom-ws1.active, #custom-ws2.active, #custom-ws3.active {
         color: #1e1e2e;
-        background: #89b4fa;
-        min-width: 26px;
-        min-height: 16px;
+        background: rgba(137, 180, 250, 0.55);
+        min-width: 34px;
+        min-height: 12px;
       }
 
       /* --- Droite --- */
-      #cpu { padding: 0 8px; color: #a6e3a1; }
-      #memory { padding: 0 8px; color: #f9e2af; }
-      #pulseaudio { padding: 0 8px; color: #94e2d5; }
+      #cpu { padding: 0 10px; color: #a6e3a1; }
+      #memory { padding: 0 10px; color: #f9e2af; }
+      #pulseaudio { padding: 0 10px; color: #94e2d5; }
       #pulseaudio.muted { color: #f38ba8; }
-      #custom-bt { padding: 0 8px; font-size: 14px; }
+      #custom-bt { padding: 0 10px; font-size: 14px; }
       #custom-bt.bt-on { color: #89b4fa; }
       #custom-bt.bt-off { color: #45475a; }
-      #clock { padding: 0 8px; color: #cdd6f4; }
+      #clock { padding: 0 10px; color: #cdd6f4; }
       #custom-power {
         padding: 0 10px;
         color: #f38ba8;
         font-size: 15px;
       }
     '';
-
     systemd = {
       enable = true;
     };

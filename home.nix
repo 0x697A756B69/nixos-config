@@ -44,7 +44,7 @@
         while [ "$d" -lt "$n" ]; do s="$s$NBSP"; d=$((d+1)); done
         printf '%s' "$s"
       }
-      meta=$(playerctl metadata --format '{{ artist }} - {{ title }}' 2>/dev/null)
+      meta=$(playerctl metadata title 2>/dev/null)
       status=$(playerctl status 2>/dev/null)
       if [ -z "$meta" ] || [ "$status" != "Playing" ] && [ "$status" != "Paused" ]; then
         rm -f "$state"
@@ -70,7 +70,6 @@
       tooltip=$(printf '%s' "$meta" | sed 's/\\/\\\\/g; s/"/\\"/g')
       printf '{"text":"%s","class":"%s","tooltip":"%s"}\n' "$text" "$cls" "$tooltip"
     '')
-
     (pkgs.writeShellScriptBin "wb-playpause" ''
       #!/usr/bin/env bash
       playerctl play-pause 2>/dev/null
