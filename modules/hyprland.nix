@@ -26,7 +26,6 @@ in
       input = {
         kb_layout = "fr";
       };
-    };
 
 
       bind = [
