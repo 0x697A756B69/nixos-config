@@ -168,32 +168,75 @@
       colorScheme = "mocha";
     };
 
-
+  #Install Nixvim
   programs.nixvim = {
     enable = true;
 
-    # lualine existant
+    # ---------- Apparence ----------
+    colorschemes.catppuccin.enable = true;
+    colorschemes.catppuccin.settings.flavour = "mocha";
+    colorschemes.catppuccin.settings.term_colors = true;
+
+    plugins.web-devicons.enable = true;
+    plugins.bufferline.enable = true;
     plugins.lualine.enable = true;
 
-    # Ajout des icônes pour un rendu visuel complet
-    plugins.web-devicons.enable = true;
+    # ---------- Arbre syntaxique (treesitter, API native) ----------
+    plugins.treesitter.enable = true;
+    plugins.treesitter.highlight.enable = true;
+    plugins.treesitter.indent.enable = true;
 
-    # Configuration avancée de Neo-tree
-    plugins.neo-tree = {
-      enable = true;
-      window.position = "left";
-    
-      # Active la synchronisation avec le fichier actuellement édité
-      filesystem.followCurrentFile.enabled = true;
+    # ---------- Exploration de fichiers (neo-tree) ----------
+    plugins.neo-tree.enable = true;
+    plugins.neo-tree.settings.window.position = "left";
+    plugins.neo-tree.settings.filesystem.follow_current_file.enabled = true;
+    plugins.neo-tree.settings.source_selector.winbar = true;
+    plugins.neo-tree.settings.source_selector.statusline = false;
 
-      # Ajoute la barre d'onglets en haut de l'explorateur (Fichiers, Git, Buffers)
-      sourceSelector = {
-        winbar = true; # Affiche les onglets en haut du volet
-        statusline = false;
-      };
+    # ---------- Recherche floue (fzf-lua) ----------
+    plugins.fzf-lua.enable = true;
+
+    # ---------- Autocomplétion (nvim-cmp -> plugins.cmp) ----------
+    plugins.cmp.enable = true;
+    plugins.cmp.settings.sources = [
+      { name = "nvim_lsp"; }
+      { name = "path"; }
+      { name = "buffer"; }
+    ];
+    plugins.cmp-nvim-lsp.enable = true;
+    plugins.cmp-path.enable = true;
+    plugins.cmp-buffer.enable = true;
+    plugins.luasnip.enable = true;
+    plugins.cmp_luasnip.enable = true;
+    plugins.lspkind.enable = true;
+
+    # ---------- Formatage à la sauvegarde (conform-nvim) ----------
+    plugins.conform-nvim.enable = true;
+    plugins.conform-nvim.settings.formatters_by_ft.nix = [ "nixpkgs-fmt" ];
+
+    # ---------- LSP (nixd pour Nix) ----------
+    plugins.lsp.enable = true;
+    plugins.lsp.servers.nixd.enable = true;
+    plugins.lsp.servers.nixd.package = pkgs.nixd;
+    plugins.lsp.keymaps.lspBuf = {
+      "gd" = "definition";
+      "K" = "hover";
+      "gi" = "implementation";
+      "gr" = "references";
+      "[d" = "diagnostic_prev";
+      "]d" = "diagnostic_next";
     };
 
-    # Raccourcis clavier améliorés (Espace + e pour les fichiers, Espace + g pour Git)
+    # ---------- Git ----------
+    plugins.gitsigns.enable = true;
+    plugins.fugitive.enable = true;
+
+    # ---------- Productivity ----------
+    plugins.which-key.enable = true;
+    plugins.nvim-autopairs.enable = true;
+    plugins.comment.enable = true;
+
+    # ---------- Raccourcis ----------
     keymaps = [
       {
         mode = "n";
@@ -203,16 +246,33 @@
       }
       {
         mode = "n";
+        key = "<leader>ff";
+        action = "<cmd>FzfLua files<cr>";
+        options.desc = "Rechercher un fichier";
+      }
+      {
+        mode = "n";
+        key = "<leader>fg";
+        action = "<cmd>FzfLua git_files<cr>";
+        options.desc = "Rechercher un fichier git";
+      }
+      {
+        mode = "n";
+        key = "<leader>fb";
+        action = "<cmd>FzfLua buffers<cr>";
+        options.desc = "Basculer de buffer";
+      }
+      {
+        mode = "n";
         key = "<leader>g";
-        action = "<cmd>Neotree toggle git_status left<cr>";
-        options.desc = "Statut Git de l'explorateur";
+        action = "<cmd>Git<cr>";
+        options.desc = "Ouvrir fugitive";
       }
     ];
 
-    extraPlugins = with pkgs.vimPlugins; [ neocord ];
-    extraConfigLua = "require('neocord').setup({})";
+    extraPlugins = with pkgs.vimPlugins; [ ];
+    extraConfigLua = "";
   };
-
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
