@@ -30,6 +30,7 @@
     pavucontrol
     jq
     hyprlock
+    pamixer
   ];
 
   home.file = {

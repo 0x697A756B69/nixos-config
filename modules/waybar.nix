@@ -10,8 +10,8 @@
         layer = "top";
         position = "top";
         height = 30;
-        margin-top = 8;
-        margin-left = 8;
+        margin-top = 0;
+        margin-left = 0;
         margin-right = 0;
         modules-left = [
           "custom/logo"
@@ -69,7 +69,7 @@ pkill -RTMIN+1 waybar''}";
         layer = "top";
         position = "top";
         height = 30;
-        margin-top = 8;
+        margin-top = 0;
         margin-left = 0;
         margin-right = 0;
         modules-center = [ "custom/wsdot" ];
@@ -86,9 +86,9 @@ pkill -RTMIN+1 waybar''}";
         layer = "top";
         position = "top";
         height = 30;
-        margin-top = 8;
+        margin-top = 0;
         margin-left = 0;
-        margin-right = 8;
+        margin-right = 0;
         modules-right = [
           "cpu"
           "memory"
@@ -153,17 +153,17 @@ pkill -RTMIN+1 waybar''}";
         color: #cdd6f4;
       }
 
-      /* --- Style commun encoches --- */
+      /* --- Encoches : collées en haut, coins bas arrondis --- */
       window#waybar {
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
-        border-radius: 14px;
+        border-radius: 0 0 14px 14px;
         color: #cdd6f4;
       }
       window#waybar.left, window#waybar.right, window#waybar.center {
         background: rgba(30, 30, 46, 0.9);
         border: 1px solid #313244;
-        border-radius: 14px;
+        border-radius: 0 0 14px 14px;
       }
 
       /* --- Encoch Gauche --- */
@@ -178,11 +178,8 @@ pkill -RTMIN+1 waybar''}";
       }
       #custom-prev, #custom-next { color: #a6adc8; }
       #custom-playpause { color: #a6e3a1; }
-      #custom-hdr {
-        padding: 0 10px;
-        font-size: 11px;
-      }
-      #custom-hdr.hdr-on { color: #a6e3a1; }
+      #custom-hdr { padding: 0 10px; font-size: 14px; }
+      #custom-hdr.hdr-on { color: #f9e2af; }
       #custom-hdr.hdr-off { color: #45475a; }
 
       /* --- Encoch Centre (dots) --- */
@@ -198,7 +195,7 @@ pkill -RTMIN+1 waybar''}";
       #memory { padding: 0 10px; color: #f9e2af; }
       #pulseaudio { padding: 0 10px; color: #94e2d5; }
       #pulseaudio.muted { color: #f38ba8; }
-      #custom-bt { padding: 0 10px; font-size: 11px; }
+      #custom-bt { padding: 0 10px; font-size: 14px; }
       #custom-bt.bt-on { color: #89b4fa; }
       #custom-bt.bt-off { color: #45475a; }
       #clock { padding: 0 10px; color: #cdd6f4; }

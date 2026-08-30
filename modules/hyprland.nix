@@ -32,19 +32,11 @@ in
         { _args = [ "${mainMod} + V"      (inline "hl.dsp.window.float({ action = \"toggle\" })") ]; }
         { _args = [ "${mainMod} + F"      (inline "hl.dsp.window.fullscreen({ action = \"toggle\" })") ]; }
         
-	# --- Volume Fn (F10/F11/F12) + XF86 ---
-        { _args = [ "XF86AudioRaiseVolume" (inline "hl.dsp.exec_cmd(\"pamixer -i 5\")") ]; }
-        { _args = [ "XF86AudioLowerVolume" (inline "hl.dsp.exec_cmd(\"pamixer -d 5\")") ]; }
-        { _args = [ "XF86AudioMute"       (inline "hl.dsp.exec_cmd(\"pamixer -t\")") ]; }
-        { _args = [ "XF86AudioNext"       (inline "hl.dsp.exec_cmd(\"playerctl next\")") ]; }
-        { _args = [ "XF86AudioPrev"       (inline "hl.dsp.exec_cmd(\"playerctl previous\")") ]; }
-        { _args = [ "XF86AudioPlay"       (inline "hl.dsp.exec_cmd(\"playerctl play-pause\")") ]; }
-
         # Fallback grappe F10/F11/F12 si la machine n'émet pas XF86Audio*
-        { _args = [ ", F10" (inline "hl.dsp.exec_cmd(\"pamixer -i 5\")") ]; }
-        { _args = [ ", F11" (inline "hl.dsp.exec_cmd(\"pamixer -d 5\")") ]; }
-        { _args = [ ", F12" (inline "hl.dsp.exec_cmd(\"pamixer -t\")") ]; }
-        
+        { _args = [ "F10" (inline "hl.dsp.exec_cmd(\"pamixer -i 5\")") ]; }
+        { _args = [ "F11" (inline "hl.dsp.exec_cmd(\"pamixer -d 5\")") ]; }
+        { _args = [ "F12" (inline "hl.dsp.exec_cmd(\"pamixer -t\")") ]; } 
+				
         # --- Workspaces (dépôt) ---
         { _args = [ "${mainMod} + Z" (inline "hl.dsp.focus({ workspace = \"-1\" })") ]; }
         { _args = [ "${mainMod} + X" (inline "hl.dsp.focus({ workspace = \"+1\" })") ]; }
