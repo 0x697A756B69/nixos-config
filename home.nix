@@ -21,7 +21,7 @@
     nerd-fonts.jetbrains-mono
     mpvpaper
     wev
-    networkmanagementapplet
+    networkmanagerapplet
     blueman
   ];
 }
