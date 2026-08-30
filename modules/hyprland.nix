@@ -23,6 +23,11 @@ in
         position = "auto";
         scale = 1;
       };
+      input = {
+        kb_layout = "fr";
+      };
+    };
+
 
       bind = [
         { _args = [ "${mainMod} + Return" (inline "hl.dsp.exec_cmd(\"${terminal}\")") ]; }
