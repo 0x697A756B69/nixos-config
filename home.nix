@@ -109,7 +109,7 @@
     (pkgs.writeShellScriptBin "wb-wsd" ''
       #!/usr/bin/env bash
       CACHE="$HOME/.cache/ws"
-      SOCK="/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
+      SOCK="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock" 
       update() {
         local id w
         id=$(hyprctl -j activeworkspace 2>/dev/null | grep '"id"' | head -1 | sed 's/.*"id": *\([0-9]*\).*/\1/')

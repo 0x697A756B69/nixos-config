@@ -8,9 +8,9 @@
       mainBar = {
         layer = "top";
         position = "top";
-        height = 32;
+        height = 38;
         margin-top = 0;
-        spacing = 8;
+        spacing = 10;
 
         # Gauche : logo + menu + musique
         modules-left = [
@@ -136,7 +136,7 @@ pkill -RTMIN+1 waybar''}";
     style = ''
       * {
         font-family: "JetBrains Mono Nerd Font";
-        font-size: 14px;
+        font-size: 16px;
         border: none;
         border-radius: 0;
         min-height: 0;
@@ -155,73 +155,71 @@ pkill -RTMIN+1 waybar''}";
         color: #cdd6f4;
       }
 
-      /* --- Encoches : largeurs nombre d'or (écran 2560, ratio φ) --- */
+      /* --- Encoches : sans bordure, larges φ --- */
       #waybar .modules-left {
         padding: 0 8px;
         background: rgba(30, 30, 46, 0.9);
-        border: 1px solid #313244;
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-center {
-        padding: 0 60px;
+        padding: 0 70px;
         margin: 0 16px;
         background: rgba(30, 30, 46, 0.9);
-        border: 1px solid #313244;
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-right {
-        padding: 0 55px;
+        padding: 0 65px;
         background: rgba(30, 30, 46, 0.9);
-        border: 1px solid #313244;
         border-radius: 0 0 16px 16px;
       }
 
       /* --- Gauche --- */
       #custom-logo {
         padding: 0 6px;
-        font-size: 18px;
+        margin-right: 8px;
+        font-size: 22px;
         color: #89b4fa;
       }
       #custom-settings, #custom-prev, #custom-playpause, #custom-next {
-        padding: 0 9px;
+        padding: 0 12px;
         color: #cdd6f4;
       }
       #custom-prev, #custom-next { color: #a6adc8; }
       #custom-playpause { color: #a6e3a1; }
-      #custom-music { padding: 0 6px; color: #a6adc8; }
+      #custom-music { padding: 0 8px; color: #a6adc8; }
       #custom-music.playing { color: #a6e3a1; }
       #custom-music.paused { color: #f9e2af; }
 
-      /* --- Centre: ronds flottants + rectangle actif flottant --- */
+      /* --- Centre: ronds imposants + rectangle actif --- */
       #custom-ws1, #custom-ws2, #custom-ws3 {
-        margin: 7px 5px;
-        font-size: 13px;
+        margin: 8px 6px;
+        font-size: 16px;
         color: #89b4fa;
         background: transparent;
-        border-radius: 7px;
-        min-width: 18px;
-        min-height: 14px;
+        border-radius: 9px;
+        min-width: 24px;
+        min-height: 18px;
       }
       #custom-ws1.active, #custom-ws2.active, #custom-ws3.active {
         color: #1e1e2e;
         background: rgba(137, 180, 250, 0.55);
-        min-width: 38px;
-        min-height: 14px;
+        min-width: 48px;
+        min-height: 18px;
       }
 
       /* --- Droite --- */
-      #cpu { padding: 0 10px; color: #a6e3a1; }
-      #memory { padding: 0 10px; color: #f9e2af; }
-      #pulseaudio { padding: 0 10px; color: #94e2d5; }
+      #cpu { padding: 0 12px; color: #a6e3a1; }
+      #memory { padding: 0 12px; color: #f9e2af; }
+      #pulseaudio { padding: 0 12px; color: #94e2d5; }
       #pulseaudio.muted { color: #f38ba8; }
-      #custom-bt { padding: 0 10px; font-size: 15px; }
+      #custom-bt { padding: 0 12px; font-size: 17px; }
       #custom-bt.bt-on { color: #89b4fa; }
       #custom-bt.bt-off { color: #45475a; }
-      #clock { padding: 0 10px; color: #cdd6f4; }
+      #clock { padding: 0 12px; color: #cdd6f4; }
       #custom-power {
         padding: 0 12px;
         color: #f38ba8;
-        font-size: 17px;
+        font-size: 20px;
       }
     '';
 
