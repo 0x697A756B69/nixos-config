@@ -25,7 +25,14 @@ let
   '';
 
   styleCss = pkgs.writeText "ags-style.css" ''
-    @import url("${config.styling.palette}/colors.css");
+    /* Couleurs inlinées (pas de @import) : vérifié en conditions réelles
+       (capture d'écran + échantillonnage de pixel) que le CSS GTK4 d'Astal
+       ne propage PAS les @define-color d'un fichier @import dans la feuille
+       de style qui l'importe — @base y résolvait vers un gris par défaut
+       (rgb(112,108,111)) au lieu de la vraie couleur (rgb(25,18,12)). Même
+       technique que modules/home/zen.nix (builtins.readFile), déjà éprouvée
+       dans ce dépôt. */
+    ${builtins.readFile "${config.styling.palette}/colors.css"}
 
     * {
       font-family: "JetBrains Mono Nerd Font";
@@ -66,6 +73,20 @@ let
     }
     .panel-header button:hover {
       background: @base_alt;
+    }
+
+    /* Interrupteur bluetooth : GTK4 le peint en bleu par défaut (Adwaita),
+       aucun rapport avec la palette matugen — reteint avec @accent/@base_alt. */
+    switch {
+      background: @base_alt;
+      border-radius: 999px;
+    }
+    switch:checked {
+      background: @accent;
+    }
+    switch slider {
+      background: @text;
+      border-radius: 999px;
     }
 
     .panel-list {

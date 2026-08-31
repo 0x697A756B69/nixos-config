@@ -211,7 +211,9 @@ pkill -RTMIN+1 waybar''}";
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-right {
-        padding: 0 14px;
+        /* Padding asymétrique : extrémité gauche (côté centre de l'écran)
+           resserrée par rapport à la droite (bord d'écran). */
+        padding: 0 14px 0 8px;
         background: @base;
         border-radius: 0 0 16px 16px;
         /* Largeur fixe (voir options.styling.modulesRightWidth) : les
