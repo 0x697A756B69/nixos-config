@@ -209,17 +209,17 @@ pkill -RTMIN+1 waybar''}";
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-right {
-        /* Padding asymétrique : extrémité gauche (côté centre de l'écran)
-           resserrée par rapport à la droite (bord d'écran). */
-        padding: 0 14px 0 8px;
+        /* Padding asymétrique : extrémité gauche (côté centre de l'écran,
+           juste avant l'icône cpu) resserrée par rapport à la droite (bord
+           d'écran). */
+        padding: 0 14px 0 4px;
         background: @base;
         border-radius: 0 0 16px 16px;
-        /* Largeur fixe mesurée en conditions réelles (hyprctl layers +
-           échantillonnage de pixel : le contenu naturel dépasse déjà 560px,
-           donc min-width doit être ≥ 584 pour rester la contrainte active).
-           Les min-width par module ci-dessous garantissent en plus que
-           {usage}%, {percentage}% et {volume}% ne sont jamais tronqués. */
-        min-width: 584px;
+        /* Pas de min-width : elle ne servait qu'à aligner l'ancien dropdown
+           AGS (retiré) sur la largeur de l'encoche. Sans elle, la largeur
+           suit son contenu naturel — les min-width par module ci-dessous
+           garantissent que {usage}%, {percentage}% et {volume}% ne sont
+           jamais tronqués. */
       }
 
       /* --- Gauche : compact, logo NixOS grand et aéré --- */
