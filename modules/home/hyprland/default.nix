@@ -37,6 +37,18 @@ in
         # decoration.blur.xray = true (voir plus bas).
       };
 
+      # App de réglages (voir modules/home/ags) : animation "slide" au lieu
+      # du fade-in par défaut, pour un effet de déploiement depuis l'encoche
+      # waybar. "slide"/"pop" sont les deux styles valides pour les
+      # layer-shell. La fenêtre reste mappée en permanence (visible piloté
+      # depuis le JS, voir SettingsWindow.tsx) : Hyprland anime chaque
+      # changement de mapping réel, pas de <revealer> GTK (essayé une fois
+      # sur le premier prototype, laissait une fenêtre fantôme).
+      layer_rule = {
+        match.namespace = "^(settings-window)$";
+        animation = "slide";
+      };
+
       config = {
         general = {
           gaps_in = 5;
@@ -76,6 +88,7 @@ in
               hl.exec_cmd("mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 ${wallpaper}")
               hl.exec_cmd("wb-wsd")
               hl.exec_cmd("waybar")
+              hl.exec_cmd("wb-dropdown")
             end
           '')
         ];
