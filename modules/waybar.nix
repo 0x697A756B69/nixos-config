@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   programs.waybar = {
@@ -158,6 +158,8 @@ pkill -RTMIN+1 waybar''}";
     };
 
     style = ''
+      @import "${config.styling.palette}/colors.css";
+
       * {
         font-family: "JetBrains Mono Nerd Font";
         font-size: 16px;
@@ -168,54 +170,54 @@ pkill -RTMIN+1 waybar''}";
       }
 
       tooltip {
-        background: #11111b;
-        border: 1px solid #313244;
+        background: @base;
+        border: 1px solid @base_alt;
         border-radius: 8px;
-        color: #cdd6f4;
+        color: @text;
       }
 
       window#waybar {
         background: transparent;
-        color: #cdd6f4;
+        color: @text;
       }
 
-      /* --- Encoches : fond plein sombre --- */
+      /* --- Encoches : opaque (contrairement aux apps translucides + flou) --- */
       #waybar .modules-left {
         padding: 0 12px;
-        background: #11111b;
+        background: @base;
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-center {
         padding: 0 4px;
         margin: 0 8px;
-        background: #11111b;
+        background: @base;
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-right {
         padding: 0 14px;
-        background: #11111b;
+        background: @base;
         border-radius: 0 0 16px 16px;
       }
 
-      /* --- Gauche : compact, logo NixOS grand et aéré, mono-clair --- */
+      /* --- Gauche : compact, logo NixOS grand et aéré --- */
       #custom-logo {
         padding: 0 6px;
         margin-right: 16px;
         font-size: 22px;
-        color: #cdd6f4;
+        color: @text;
       }
       #custom-settings, #custom-prev, #custom-playpause, #custom-next {
         padding: 0 7px;
         font-size: 14px;
-        color: #cdd6f4;
+        color: @text;
       }
-      #custom-music { padding: 0 5px; font-size: 13px; color: #a6adc8; }
+      #custom-music { padding: 0 5px; font-size: 13px; color: @text_alt; }
 
       /* --- Centre : encoche serrée, rectangle actif sobre, points tassés --- */
       #custom-ws1, #custom-ws2, #custom-ws3 {
         margin: 8px 2px;
         font-size: 14px;
-        color: #cdd6f4;
+        color: @text;
         background: transparent;
         border-radius: 9px;
         min-width: 22px;
@@ -223,35 +225,35 @@ pkill -RTMIN+1 waybar''}";
       }
       #custom-ws1.active, #custom-ws2.active, #custom-ws3.active {
         margin: 8px 2px;
-        color: #1e1e2e;
-        background: #cdd6f4;
+        color: @on_accent;
+        background: @accent;
         min-width: 48px;
         min-height: 22px;
       }
 
-      /* --- Droite : compact, mono-clair --- */
-      #cpu { padding: 0 7px; font-size: 13px; color: #cdd6f4; }
-      #memory { padding: 0 7px; font-size: 13px; color: #cdd6f4; }
-      #pulseaudio { padding: 0 7px; font-size: 13px; color: #cdd6f4; }
-      #pulseaudio.muted { color: #6c7086; }
-      #custom-bt { padding: 0 7px; font-size: 13px; color: #cdd6f4; }
-      #custom-bt.bt-off { color: #6c7086; }
-      #clock { padding: 0 7px; font-size: 13px; color: #cdd6f4; }
+      /* --- Droite : compact, palette --- */
+      #cpu { padding: 0 7px; font-size: 13px; color: @text; }
+      #memory { padding: 0 7px; font-size: 13px; color: @text; }
+      #pulseaudio { padding: 0 7px; font-size: 13px; color: @text; }
+      #pulseaudio.muted { color: @disabled; }
+      #custom-bt { padding: 0 7px; font-size: 13px; color: @text; }
+      #custom-bt.bt-off { color: @disabled; }
+      #clock { padding: 0 7px; font-size: 13px; color: @text; }
       #custom-power {
         padding: 0 7px;
-        color: #cdd6f4;
+        color: @error;
         font-size: 13px;
       }
 
       /* --- Réseau + HDR --- */
-      #network.wifi, #network.ethernet { padding: 0 6px; font-size: 13px; color: #cdd6f4; }
+      #network.wifi, #network.ethernet { padding: 0 6px; font-size: 13px; color: @text; }
       #custom-hdr {
         padding: 0 7px;
         font-size: 12px;
         font-weight: bold;
       }
-      #custom-hdr.hdr-on { color: #cdd6f4; }
-      #custom-hdr.hdr-off { color: #6c7086; }
+      #custom-hdr.hdr-on { color: @text; }
+      #custom-hdr.hdr-off { color: @disabled; }
     '';
 
     systemd = {

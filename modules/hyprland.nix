@@ -24,6 +24,17 @@ in
         scale = 1;
       };
 
+      # Zen Browser : chrome translucide + flou derrière. La transparence est
+      # portée par le CSS (modules/zen.nix); ici on laisse percer le desktop
+      # avec une opacité composite de 95% + flou ciblé (déjà global xray).
+      window_rule = {
+        match.class = "zen";
+        opacity = "0.95 0.95";
+        # Pas de champ `blur` pour une window_rule (réservé aux layer_rule) :
+        # le flou derrière Zen est déjà géré globalement par
+        # decoration.blur.xray = true (voir plus bas).
+      };
+
       config = {
         general = {
           gaps_in = 5;
@@ -37,6 +48,12 @@ in
         };
         decoration = {
           rounding = 8;
+          blur = {
+            enabled = true;
+            size = 6;
+            passes = 2;
+            xray = true;
+          };
         };
         animations = {
           enabled = true;
@@ -99,6 +116,12 @@ in
 
         # --- Wallpaper animé: restart mpvpaper ---
         { _args = [ "${mainMod} + B" (inline "hl.dsp.exec_cmd(\"pkill mpvpaper; sleep 0.2; mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 ${wallpaper}\")") ]; }
+
+        # --- Capture d'écran (façon Plasma : zone + presse-papiers) ---
+        { _args = [ "Print" (inline "hl.dsp.exec_cmd(\"wb-cap area\")") ]; }
+        { _args = [ "SHIFT + Print" (inline "hl.dsp.exec_cmd(\"wb-cap screen\")") ]; }
+        # --- Vidéo : toggle zone d'enregistrement ---
+        { _args = [ "${mainMod} + SHIFT + R" (inline "hl.dsp.exec_cmd(\"wb-cap record\")") ]; }
       ];
 
       on = {

@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   home.username = "izuki";
@@ -8,17 +8,55 @@
   imports = [
     ./modules/hyprland.nix
     ./modules/waybar.nix
+    ./modules/theming.nix
     ./modules/infinite-desktop.nix
+    # Zen Browser : profil déclaratif + thème matugen (voir modules/zen.nix)
+    ./modules/zen.nix
   ];
 
-  programs.kitty.enable = true;
-  programs.wofi.enable = true;
+  programs.kitty = {
+    enable = true;
+    extraConfig = ''
+      # Couleurs depuis la palette du wallpaper (matugen, voir theming.nix)
+      include ${config.styling.palette}/kitty.conf
+    '';
+  };
+  programs.wofi = {
+    enable = true;
+    style = ''
+      @import "${config.styling.palette}/colors.css";
+
+      * {
+        font-family: "JetBrains Mono Nerd Font";
+      }
+      window {
+        background-color: @base_glass;
+        color: @text;
+        border: 1px solid @border;
+        border-radius: 12px;
+      }
+      #input {
+        background-color: @base_alt;
+        color: @text;
+        border: none;
+        border-radius: 8px;
+        margin: 8px;
+      }
+      #inner-box { padding: 0 8px 8px 8px; }
+      #entry { border-radius: 8px; padding: 6px 10px; }
+      #entry:selected {
+        background-color: @accent;
+        color: @on_accent;
+      }
+    '';
+  };
 
   programs.home-manager.enable = true;
 
   home.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
     mpvpaper
+    matugen
     wev
     networkmanagerapplet
     blueman
@@ -32,6 +70,15 @@
     hyprlock
     pamixer
     socat
+
+    # --- Capture d'écran + vidéo (façon Plasma Wayland) ---
+    grim
+    slurp
+    grimblast
+    swappy
+    wf-recorder
+    wl-clipboard
+    libnotify
 
     # --- Scripts waybar (encoches) ---
     (pkgs.writeShellScriptBin "wb-music" ''
@@ -188,6 +235,36 @@
       else
         printf '{"text":"HDR","class":"hdr-off","tooltip":"HDR désactivé"}\n'
       fi
+    '')
+    (pkgs.writeShellScriptBin "wb-cap" ''
+      #!/usr/bin/env bash
+      # wb-cap — capture d'écran + vidéo (façon Plasma Wayland).
+      # Usage: wb-cap area|screen|record
+      mkdir -p "$HOME/Images" "$HOME/Videos"
+      case "$1" in
+        area)
+          grimblast --notify copy area
+          ;;
+        screen)
+          grimblast --notify save output "$HOME/Images/ecran-$(date +%F-%H%M%S).png"
+          ;;
+        record)
+          state="$HOME/.cache/wb-cap-record"
+          if [ -f "$state" ]; then
+            pid=$(cat "$state" 2>/dev/null)
+            kill "$pid" 2>/dev/null
+            rm -f "$state"
+            notify-send -t 2500 "Enregistrement arrêté" "Sauvegardé dans ~/Videos"
+          else
+            file="$HOME/Videos/capture-$(date +%F-%H%M%S).mp4"
+            geom=$(${pkgs.slurp}/bin/slurp -f "%g" 2>/dev/null)
+            [ -z "$geom" ] && exit 1
+            ${pkgs.wf-recorder}/bin/wf-recorder -g "$geom" -f "$file" &
+            echo $! > "$state"
+            notify-send -t 2500 "Enregistrement en cours" "Raccourci pour arrêter"
+          fi
+          ;;
+      esac
     '')
     (pkgs.writeShellScriptBin "power-menu" ''
       #!/usr/bin/env bash

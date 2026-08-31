@@ -17,6 +17,11 @@
     nixvim = {
       url = "github:nix-community/nixvim";
     };
+
+    zen-browser = {
+      url = "github:youwen5/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, spicetify-nix, home-manager, nixvim, ... }@inputs: {
