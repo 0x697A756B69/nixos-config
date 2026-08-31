@@ -1,0 +1,128 @@
+{ config, pkgs, lib, self, ... }:
+
+let
+  mainMod = "SUPER";
+  terminal = "kitty";
+  menu = "wofi --show drun";
+  inline = lib.generators.mkLuaInline;
+  infinite = config.programs.hyprland-infinite.package;
+  core = "${infinite}/lib/hyprland-infinite/infinite_desktop_core.py";
+  py = (pkgs.python3.withPackages (ps: [ ps.evdev ]));
+  wallpaper = "${self}/modules/home/theming/wallpapers/wallpaper_upscaled_2k.mp4";
+in
+{
+  imports = [ ./infinite-desktop.nix ];
+
+  wayland.windowManager.hyprland = {
+    enable = true;
+    configType = "lua";
+    package = pkgs.hyprland;
+
+    settings = {
+      monitor = {
+        output = "";
+        mode = "2560x1440@280";
+        position = "auto";
+        scale = 1;
+      };
+
+      # Zen Browser : chrome translucide + flou derrière. La transparence est
+      # portée par le CSS (modules/zen.nix); ici on laisse percer le desktop
+      # avec une opacité composite de 95% + flou ciblé (déjà global xray).
+      window_rule = {
+        match.class = "zen";
+        opacity = "0.95 0.95";
+        # Pas de champ `blur` pour une window_rule (réservé aux layer_rule) :
+        # le flou derrière Zen est déjà géré globalement par
+        # decoration.blur.xray = true (voir plus bas).
+      };
+
+      config = {
+        general = {
+          gaps_in = 5;
+          gaps_out = 10;
+          border_size = 2;
+          col = {
+            active_border = "rgba(89b4faee)";
+            inactive_border = "rgba(45475aaa)";
+          };
+          layout = "dwindle";
+        };
+        decoration = {
+          rounding = 8;
+          blur = {
+            enabled = true;
+            size = 6;
+            passes = 2;
+            xray = true;
+          };
+        };
+        animations = {
+          enabled = true;
+        };
+        input = {
+          kb_layout = "fr";
+        };
+      };
+
+      bind = import ./binds.nix { inherit mainMod terminal menu inline wallpaper; };
+
+      on = {
+        _args = [
+          "hyprland.start"
+          (inline ''
+            function()
+              hl.exec_cmd("${py}/bin/python ${core} 1.6 > /tmp/infinite-desktop.log 2>&1")
+              hl.exec_cmd("mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 ${wallpaper}")
+              hl.exec_cmd("wb-wsd")
+              hl.exec_cmd("waybar")
+            end
+          '')
+        ];
+      };
+    };
+  };
+
+  # --- Outils consommés par les binds Hyprland (wallpaper, capture d'écran) ---
+  home.packages = with pkgs; [
+    mpvpaper
+    grim
+    slurp
+    grimblast
+    swappy
+    wf-recorder
+    wl-clipboard
+    libnotify
+
+    (pkgs.writeShellScriptBin "wb-cap" ''
+      #!/usr/bin/env bash
+      # wb-cap — capture d'écran + vidéo (façon Plasma Wayland).
+      # Usage: wb-cap area|screen|record
+      mkdir -p "$HOME/Images" "$HOME/Videos"
+      case "$1" in
+        area)
+          grimblast --notify copy area
+          ;;
+        screen)
+          grimblast --notify save output "$HOME/Images/ecran-$(date +%F-%H%M%S).png"
+          ;;
+        record)
+          state="$HOME/.cache/wb-cap-record"
+          if [ -f "$state" ]; then
+            pid=$(cat "$state" 2>/dev/null)
+            kill "$pid" 2>/dev/null
+            rm -f "$state"
+            notify-send -t 2500 "Enregistrement arrêté" "Sauvegardé dans ~/Videos"
+          else
+            file="$HOME/Videos/capture-$(date +%F-%H%M%S).mp4"
+            geom=$(${pkgs.slurp}/bin/slurp -f "%g" 2>/dev/null)
+            [ -z "$geom" ] && exit 1
+            ${pkgs.wf-recorder}/bin/wf-recorder -g "$geom" -f "$file" &
+            echo $! > "$state"
+            notify-send -t 2500 "Enregistrement en cours" "Raccourci pour arrêter"
+          fi
+          ;;
+      esac
+    '')
+  ];
+}

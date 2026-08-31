@@ -260,4 +260,182 @@ pkill -RTMIN+1 waybar''}";
       enable = false;
     };
   };
+
+  # --- Outils consommés par les modules ci-dessus (volume, musique, power menu) ---
+  home.packages = with pkgs; [
+    playerctl
+    pavucontrol
+    pamixer
+    socat
+    jq
+    hyprlock
+
+    (pkgs.writeShellScriptBin "wb-music" ''
+      #!/usr/bin/env bash
+      win=6
+      state="$HOME/.cache/wb-music-pos"
+      NBSP=$(printf ' ')
+      pad() {
+        local s="$1" n="$2" d
+        d=$(printf '%s' "$s" | wc -m)
+        while [ "$d" -lt "$n" ]; do s="$s$NBSP"; d=$((d+1)); done
+        printf '%s' "$s"
+      }
+      meta=$(playerctl metadata title 2>/dev/null)
+      status=$(playerctl status 2>/dev/null)
+      if [ -z "$meta" ] || [ "$status" != "Playing" ] && [ "$status" != "Paused" ]; then
+        rm -f "$state"
+        echo '{"text":"","class":"stopped"}'
+        exit 0
+      fi
+      title=$(printf '%s' "$meta" | sed 's/<[^>]*>//g')
+      len=$(printf '%s' "$title" | wc -m)
+      if [ "$len" -le "$win" ]; then
+        rm -f "$state"
+        text=$(pad "$title" "$win")
+      else
+        pos=0
+        [ -f "$state" ] && pos=$(cat "$state" 2>/dev/null)
+        pos=$((pos % len))
+        text=$(printf '%s' "$title" | cut -c$((pos+1))-$((pos+win)))
+        text=$(pad "$text" "$win")
+        echo $((pos+1)) > "$state"
+      fi
+      cls=playing
+      [ "$status" = "Paused" ] && cls=paused
+      text=$(printf '%s' "$text" | sed 's/\\/\\\\/g; s/"/\\"/g')
+      tooltip=$(printf '%s' "$meta" | sed 's/\\/\\\\/g; s/"/\\"/g')
+      printf '{"text":"%s","class":"%s","tooltip":"%s"}\n' "$text" "$cls" "$tooltip"
+    '')
+    (pkgs.writeShellScriptBin "wb-playpause" ''
+      #!/usr/bin/env bash
+      playerctl play-pause 2>/dev/null
+      sleep 0.2
+      status=$(playerctl status 2>/dev/null)
+      if [ "$status" = "Playing" ]; then echo "󰏤"; else echo "󰐊"; fi
+    '')
+
+    (pkgs.writeShellScriptBin "wb-prev" ''
+      #!/usr/bin/env bash
+      playerctl previous 2>/dev/null
+      echo ""
+    '')
+
+    (pkgs.writeShellScriptBin "wb-next" ''
+      #!/usr/bin/env bash
+      playerctl next 2>/dev/null
+      echo ""
+    '')
+
+    (pkgs.writeShellScriptBin "wb-bt" ''
+      #!/usr/bin/env bash
+      state=$(bluetoothctl show 2>/dev/null | grep -q 'Powered: yes' && echo on || echo off)
+      if [ "$1" = "toggle" ]; then
+        if [ "$state" = "on" ]; then bluetoothctl power off; else bluetoothctl power on; fi
+        pkill -RTMIN+3 waybar
+        state=$(bluetoothctl show 2>/dev/null | grep -q 'Powered: yes' && echo on || echo off)
+      fi
+      if [ "$state" = "on" ]; then
+        echo '{"text":"󰂯","class":"bt-on","tooltip":"Bluetooth actif"}'
+      else
+        echo '{"text":"󰂲","class":"bt-off","tooltip":"Bluetooth inactif"}'
+      fi
+    '')
+
+    (pkgs.writeShellScriptBin "wb-wsd" ''
+      #!/usr/bin/env bash
+      CACHE="$HOME/.cache/ws"
+      SOCK="$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock"
+      update() {
+        local id w
+        id=$(hyprctl -j activeworkspace 2>/dev/null | grep '"id"' | head -1 | sed 's/.*"id": *\([0-9]*\).*/\1/')
+        [ -z "$id" ] && id="1"
+        for w in 1 2 3; do
+          if [ "$w" = "$id" ]; then
+            printf '{"text":" ","class":"active"}\n' > "$CACHE$w"
+          else
+            printf '{"text":"●","class":"inactive"}\n' > "$CACHE$w"
+          fi
+        done
+        pkill -RTMIN+4 waybar 2>/dev/null
+      }
+      update
+      [ -S "$SOCK" ] || exit 0
+      socat -U - "UNIX-CONNECT:$SOCK" | while read -r ev; do
+        case "$ev" in
+          workspacev2*|focusedmonv2*|activeworkspace*|workspace*|focusedmon*) update ;;
+        esac
+      done
+    '')
+
+    (pkgs.writeShellScriptBin "wb-wsreader" ''
+      #!/usr/bin/env bash
+      f="$HOME/.cache/ws$1"
+      if [ -f "$f" ]; then cat "$f"; else printf '{"text":"●","class":"inactive"}\n'; fi
+    '')
+    (pkgs.writeShellScriptBin "wb-hdr" ''
+      #!/usr/bin/env bash
+      # wb-hdr — état + toggle HDR du moniteur (Hyprland >= 0.55, config Lua).
+      # Usage:  wb-hdr            → JSON pour waybar (class hdr-on / hdr-off)
+      #         wb-hdr toggle     → bascule cm/bitdepth puis notifie waybar (RTMIN+10)
+      CACHE="$HOME/.cache/wb-hdr"
+
+      read_info() {
+        hyprctl monitors -j 2>/dev/null | jq -r '
+          (map(select(.focused)) | .[0]) // .[0]
+          | [ .name,
+              (.colorManagementPreset // "srgb"),
+              ("\(.width)x\(.height)@\((.refreshRate + 0.5) | floor)"),
+              .scale,
+              "\(.x)x\(.y)" ] | @tsv' 2>/dev/null
+      }
+
+      info=$(read_info)
+      if [ -z "$info" ]; then
+        info=$(cat "$CACHE" 2>/dev/null)
+      fi
+      [ -z "$info" ] && info=$'DP-4\tsrgb\t2560x1440@280\t1\t0x0'
+
+      MON=$(printf '%s' "$info" | cut -f1)
+      CM=$(printf '%s' "$info"   | cut -f2)
+      MODE=$(printf '%s' "$info" | cut -f3)
+      SC=$(printf '%s' "$info"   | cut -f4)
+      POS=$(printf '%s' "$info"  | cut -f5)
+
+      case "$CM" in
+        hdr|hdredid) on=1 ;;
+        *) on=0 ;;
+      esac
+
+      if [ "$1" = "toggle" ]; then
+        if [ "$on" = "1" ]; then
+          CMOUT="srgb"; BITS=8
+        else
+          CMOUT="hdr"; BITS=10
+        fi
+        hyprctl eval "hl.monitor({ output = \"$MON\", mode = \"$MODE\", position = \"$POS\", scale = $SC, cm = \"$CMOUT\", bitdepth = $BITS })" >/dev/null 2>&1
+        printf '%s\t%s\t%s\t%s\t%s\n' "$MON" "$CMOUT" "$MODE" "$SC" "$POS" > "$CACHE"
+        pkill -RTMIN+10 waybar 2>/dev/null
+        CM=$CMOUT
+      fi
+
+      if [ "$CM" = "hdr" ] || [ "$CM" = "hdredid" ]; then
+        printf '{"text":"HDR","class":"hdr-on","tooltip":"HDR activé (%s)"}\n' "$CM"
+      else
+        printf '{"text":"HDR","class":"hdr-off","tooltip":"HDR désactivé"}\n'
+      fi
+    '')
+    (pkgs.writeShellScriptBin "power-menu" ''
+      #!/usr/bin/env bash
+      options=$'⏻ Éteindre\n󰜉 Redémarrer\n󰒲 Veille\n Verrouiller\n󰗼 Quitter Hyprland'
+      choice=$(printf '%s' "$options" | rofi -dmenu -p "Power" -theme "$HOME/.config/rofi/power.rasi" 2>/dev/null)
+      case "$choice" in
+        *"Éteindre") systemctl poweroff ;;
+        *"Redémarrer") systemctl reboot ;;
+        *"Veille") systemctl suspend ;;
+        *"Verrouiller") hyprlock ;;
+        *"Quitter") hyprctl dispatch exit ;;
+      esac
+    '')
+  ];
 }

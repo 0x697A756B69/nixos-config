@@ -31,7 +31,7 @@
       specialArgs = { inherit inputs self; };
 
       modules = [
-        ./configuration.nix
+        ./hosts/nixos
         spicetify-nix.nixosModules.spicetify
 
         home-manager.nixosModules.home-manager

@@ -1,0 +1,68 @@
+# Raccourcis clavier Hyprland (config Lua via hl.dsp.*).
+{ mainMod, terminal, menu, inline, wallpaper }:
+
+[
+  { _args = [ "${mainMod} + Return" (inline "hl.dsp.exec_cmd(\"${terminal}\")") ]; }
+  { _args = [ "${mainMod} + R"      (inline "hl.dsp.exec_cmd(\"${menu}\")") ]; }
+  # SUPER+Q : seul bind lié à la fermeture de fenêtre (pas de killactive brutal
+  # en parallèle). hl.dsp.window.close() envoie une demande de fermeture
+  # normale ; c'est donc bien kitty (confirm_os_window_close, voir
+  # modules/home/kitty/default.nix) qui décide d'afficher ou non une
+  # confirmation, quel que soit le déclencheur (ce bind, bouton, ctrl+shift+w).
+  { _args = [ "${mainMod} + Q"      (inline "hl.dsp.window.close()") ]; }
+  { _args = [ "${mainMod} + M"      (inline "hl.dsp.exit()") ]; }
+  { _args = [ "${mainMod} + V"      (inline "hl.dsp.window.float({ action = \"toggle\" })") ]; }
+  { _args = [ "${mainMod} + F"      (inline "hl.dsp.window.fullscreen({ action = \"toggle\" })") ]; }
+
+  # Fallback grappe F10/F11/F12 si la machine n'émet pas XF86Audio*
+  # --- Volume : Fn+F10 baisser, Fn+F11 monter, Fn+F12 mute ---
+  { _args = [ "XF86AudioLowerVolume" (inline "hl.dsp.exec_cmd(\"pamixer -d 5\")") ]; }
+  { _args = [ "XF86AudioRaiseVolume" (inline "hl.dsp.exec_cmd(\"pamixer -i 5\")") ]; }
+  { _args = [ "XF86AudioMute" (inline "hl.dsp.exec_cmd(\"pamixer -t\")") ]; }
+  # --- Média : Fn aussi pour next/prev/play ---
+  { _args = [ "XF86AudioNext" (inline "hl.dsp.exec_cmd(\"playerctl next\")") ]; }
+  { _args = [ "XF86AudioPrev" (inline "hl.dsp.exec_cmd(\"playerctl previous\")") ]; }
+  { _args = [ "XF86AudioPlay" (inline "hl.dsp.exec_cmd(\"playerctl play-pause\")") ]; }
+
+  # --- Workspaces (dépôt) ---
+  { _args = [ "${mainMod} + Z" (inline "hl.dsp.focus({ workspace = \"-1\" })") ]; }
+  { _args = [ "${mainMod} + X" (inline "hl.dsp.focus({ workspace = \"+1\" })") ]; }
+  { _args = [ "${mainMod} + SHIFT + Z" (inline "hl.dsp.window.move({ workspace = \"-1\" })") ]; }
+  { _args = [ "${mainMod} + SHIFT + X" (inline "hl.dsp.window.move({ workspace = \"+1\" })") ]; }
+
+  # --- Toggle flottant toutes fenêtres ---
+  { _args = [ "${mainMod} + D" (inline "hl.dsp.exec_cmd(\"floating_tile_toggle\")") ]; }
+
+  # --- Navigation ---
+  { _args = [ "${mainMod} + left"  (inline "hl.dsp.exec_cmd(\"navigate_windows left\")") ]; }
+  { _args = [ "${mainMod} + right" (inline "hl.dsp.exec_cmd(\"navigate_windows right\")") ]; }
+  { _args = [ "${mainMod} + up"    (inline "hl.dsp.exec_cmd(\"navigate_windows up\")") ]; }
+  { _args = [ "${mainMod} + down"  (inline "hl.dsp.exec_cmd(\"navigate_windows down\")") ]; }
+
+  # --- Move tiled ---
+  { _args = [ "${mainMod} + ALT + left"  (inline "hl.dsp.exec_cmd(\"move_window_tiled left\")") ]; }
+  { _args = [ "${mainMod} + ALT + right" (inline "hl.dsp.exec_cmd(\"move_window_tiled right\")") ]; }
+  { _args = [ "${mainMod} + ALT + up"    (inline "hl.dsp.exec_cmd(\"move_window_tiled up\")") ]; }
+  { _args = [ "${mainMod} + ALT + down"  (inline "hl.dsp.exec_cmd(\"move_window_tiled down\")") ]; }
+
+  # --- Move floating (repeating) ---
+  { _args = [ "${mainMod} + SHIFT + left"  (inline "hl.dsp.exec_cmd(\"move_window left\")")  { repeating = true; } ]; }
+  { _args = [ "${mainMod} + SHIFT + right" (inline "hl.dsp.exec_cmd(\"move_window right\")") { repeating = true; } ]; }
+  { _args = [ "${mainMod} + SHIFT + up"    (inline "hl.dsp.exec_cmd(\"move_window up\")")    { repeating = true; } ]; }
+  { _args = [ "${mainMod} + SHIFT + down"  (inline "hl.dsp.exec_cmd(\"move_window down\")")  { repeating = true; } ]; }
+
+  # --- Resize (repeating) ---
+  { _args = [ "${mainMod} + CTRL + left"  (inline "hl.dsp.exec_cmd(\"resize_window left\")")  { repeating = true; } ]; }
+  { _args = [ "${mainMod} + CTRL + right" (inline "hl.dsp.exec_cmd(\"resize_window right\")") { repeating = true; } ]; }
+  { _args = [ "${mainMod} + CTRL + up"    (inline "hl.dsp.exec_cmd(\"resize_window up\")")    { repeating = true; } ]; }
+  { _args = [ "${mainMod} + CTRL + down"  (inline "hl.dsp.exec_cmd(\"resize_window down\")")  { repeating = true; } ]; }
+
+  # --- Wallpaper animé: restart mpvpaper ---
+  { _args = [ "${mainMod} + B" (inline "hl.dsp.exec_cmd(\"pkill mpvpaper; sleep 0.2; mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 ${wallpaper}\")") ]; }
+
+  # --- Capture d'écran (façon Plasma : zone + presse-papiers) ---
+  { _args = [ "Print" (inline "hl.dsp.exec_cmd(\"wb-cap area\")") ]; }
+  { _args = [ "SHIFT + Print" (inline "hl.dsp.exec_cmd(\"wb-cap screen\")") ]; }
+  # --- Vidéo : toggle zone d'enregistrement ---
+  { _args = [ "${mainMod} + SHIFT + R" (inline "hl.dsp.exec_cmd(\"wb-cap record\")") ]; }
+]

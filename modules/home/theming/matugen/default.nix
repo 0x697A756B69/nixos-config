@@ -14,7 +14,7 @@
   } ''
     set -euo pipefail
     mkdir -p $out
-    ffmpeg -y -i ${self}/modules/wallpapers/wallpaper_upscaled_2k.mp4 -vf 'scale=512:288' -frames:v 1 frame.png -loglevel error
+    ffmpeg -y -i ${self}/modules/home/theming/wallpapers/wallpaper_upscaled_2k.mp4 -vf 'scale=512:288' -frames:v 1 frame.png -loglevel error
     matugen image frame.png -m dark --json hex --source-color-index 0 </dev/null > palette.json
     # --- Rôles Material You -> CSS (waybar + wofi) ---
     jq -r '
