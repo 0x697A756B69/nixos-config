@@ -29,6 +29,7 @@ export default function NetworkPanel() {
     const wifi = network.wifi
 
     return <window
+        name="network-panel"
         namespace="network-panel"
         visible={false}
         cssClasses={["Panel"]}

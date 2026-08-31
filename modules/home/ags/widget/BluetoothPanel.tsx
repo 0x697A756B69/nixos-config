@@ -30,6 +30,7 @@ function DeviceRow(device: AstalBluetooth.Device) {
 
 export default function BluetoothPanel() {
     return <window
+        name="bluetooth-panel"
         namespace="bluetooth-panel"
         visible={false}
         cssClasses={["Panel"]}
