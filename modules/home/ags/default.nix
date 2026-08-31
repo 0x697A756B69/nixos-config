@@ -84,6 +84,11 @@ let
     .tab-content {
       color: @text;
     }
+    .tab-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: @text;
+    }
 
     /* Interrupteurs (bluetooth power, etc.) : GTK4 les peint en bleu par
        défaut (Adwaita), aucun rapport avec la palette matugen. */
@@ -135,6 +140,7 @@ let
     mkdir -p $out/widget
     cp ${./app.ts} $out/app.ts
     cp ${./widget/SettingsWindow.tsx} $out/widget/SettingsWindow.tsx
+    cp ${./widget/WifiTab.tsx} $out/widget/WifiTab.tsx
     cp ${styleCss} $out/style.css
     cp ${packageJson} $out/package.json
   '';

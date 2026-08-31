@@ -143,23 +143,24 @@ pkill -RTMIN+1 waybar''}";
           # Clic gauche : bascule le radio wifi on/off (wb-net toggle,
           # NetworkManager se reconnecte seul aux réseaux connus une fois
           # rallumé, pas besoin de reconnexion manuelle comme le bluetooth).
-          # Clic droit : nm-connection-editor pour la gestion complète.
+          # Clic droit : app de réglages (voir modules/home/ags), onglet
+          # Wi-Fi — remplace nm-connection-editor (non thémé).
           interface = "wlp*";
           format-wifi = "{icon}";
           format-icons = [ "󰤯" "󰤟" "󰤢" "󰤨" ];
           format-disconnected = "";
           on-click = "wb-net toggle";
-          on-click-right = "nm-connection-editor";
+          on-click-right = "ags request open:wifi";
           tooltip = false;
         };
         "network#ethernet" = {
           # Ethernet : le câble branché supplante l'icône wifi. Pas de
           # toggle radio pour le filaire (rien à activer/désactiver côté
-          # logiciel) : seul le clic droit ouvre la gestion complète.
+          # logiciel) : seul le clic droit ouvre l'app de réglages.
           interface = "en*";
           format-ethernet = "󰈀";
           format-disconnected = "";
-          on-click-right = "nm-connection-editor";
+          on-click-right = "ags request open:wifi";
           tooltip = false;
         };
         "custom/hdr" = {

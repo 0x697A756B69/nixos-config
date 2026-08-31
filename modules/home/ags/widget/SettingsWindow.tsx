@@ -1,5 +1,6 @@
 import { Variable, bind } from "astal"
 import { App, Astal, Gtk } from "astal/gtk4"
+import WifiTab from "./WifiTab"
 
 export type TabId = "wifi" | "bluetooth" | "display"
 
@@ -32,14 +33,19 @@ function SidebarButton({ id, label }: { id: TabId; label: string }) {
     </button>
 }
 
-// Placeholder : remplacé par de vrais composants (WifiTab/BluetoothTab/
-// DisplayTab) aux étapes suivantes du plan. Un seul <box> par onglet,
-// visibilité conditionnée par l'onglet actif (pattern déjà vérifié dans
-// l'ancien NetworkPanel/BluetoothPanel — pas de <stack> GTK non testé ici).
-function TabPlaceholder(id: TabId, text: string) {
+// Un seul <box> par onglet, visibilité conditionnée par l'onglet actif
+// (pattern déjà vérifié dans l'ancien NetworkPanel/BluetoothPanel — pas de
+// <stack> GTK non testé ici).
+function TabContainer(id: TabId, child: Gtk.Widget) {
     return <box visible={bind(activeTab).as(t => t === id)} cssClasses={["tab-content"]}>
-        <label label={text} />
+        {child}
     </box>
+}
+
+// Placeholder : remplacé par de vrais composants (BluetoothTab/DisplayTab)
+// aux étapes suivantes du plan.
+function TabPlaceholder(id: TabId, text: string) {
+    return TabContainer(id, <label label={text} />)
 }
 
 export default function SettingsWindow() {
@@ -63,7 +69,7 @@ export default function SettingsWindow() {
                 </button>
             </box>
             <box vertical cssClasses={["content"]}>
-                {TabPlaceholder("wifi", "Wi-Fi — à venir")}
+                {TabContainer("wifi", WifiTab())}
                 {TabPlaceholder("bluetooth", "Bluetooth — à venir")}
                 {TabPlaceholder("display", "Écran — à venir")}
             </box>
