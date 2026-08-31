@@ -1,0 +1,60 @@
+* { font: "JetBrainsMonoNerdFont 12"; }
+
+configuration {
+  modi: "run";
+  show-icons: true;
+}
+
+/* Barre d'outils de capture, ancrée en bas au centre de l'écran.
+   Fond sombre translucide, boutons côte à côte (icône au-dessus du texte). */
+window {
+  location: south;
+  anchor: south;
+  width: 640px;
+  border-radius: 22px;
+  border: 1px;
+  border-color: @border;
+  background-color: rgba(14, 14, 16, 0.88);
+}
+
+mainbox {
+  background-color: transparent;
+  padding: 8px;
+}
+
+listview {
+  orientation: horizontal;
+  columns: 3;
+  spacing: 6px;
+  padding: 6px;
+  scrollbar: false;
+}
+
+element {
+  orientation: vertical;
+  padding: 14px 18px;
+  spacing: 5px;
+  border-radius: 14px;
+  background-color: transparent;
+}
+
+element selected {
+  background-color: @accent;
+}
+
+element normal, element alternate {
+  text-color: @text;
+}
+
+element selected normal, element selected active {
+  text-color: @on-accent;
+}
+
+element-icon {
+  size: 26px;
+  horizontal-align: 0.5;
+}
+
+element-text {
+  horizontal-align: 0.5;
+}

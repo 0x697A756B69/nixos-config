@@ -51,6 +51,12 @@
     '';
   };
 
+  # Vesktop : client Discord (Vencord intégré), meilleur support Linux pour les
+  # appels/streams. Installation propre sans theming ni transparence custom.
+  programs.vesktop = {
+    enable = true;
+  };
+
   programs.home-manager.enable = true;
 
   home.packages = with pkgs; [

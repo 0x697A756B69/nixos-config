@@ -257,7 +257,7 @@ pkill -RTMIN+1 waybar''}";
     '';
 
     systemd = {
-      enable = true;
+      enable = false;
     };
   };
 }
