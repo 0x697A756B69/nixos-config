@@ -37,20 +37,6 @@ in
         # decoration.blur.xray = true (voir plus bas).
       };
 
-      # Dropdown wifi (voir modules/home/ags) : animation "slide" au lieu du
-      # fade-in par défaut, pour un effet de déploiement depuis l'encoche
-      # waybar plutôt qu'une apparition instantanée. "slide" est un des deux
-      # styles d'animation valides pour les layer-shell (l'autre étant
-      # "pop") ; ags toggle bascule le mapping de la fenêtre, Hyprland anime
-      # cette transition lui-même (pas de <revealer> GTK, voir la note dans
-      # modules/home/waybar sur l'essai avorté avec un revealer). Bluetooth
-      # n'a plus de dropdown (voir custom/bt dans modules/home/waybar) :
-      # juste un toggle on/off + reconnexion auto, donc pas de layer_rule ici.
-      layer_rule = {
-        match.namespace = "^(network-panel)$";
-        animation = "slide";
-      };
-
       config = {
         general = {
           gaps_in = 5;
@@ -90,7 +76,6 @@ in
               hl.exec_cmd("mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 ${wallpaper}")
               hl.exec_cmd("wb-wsd")
               hl.exec_cmd("waybar")
-              hl.exec_cmd("wb-dropdown")
             end
           '')
         ];
