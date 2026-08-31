@@ -137,16 +137,13 @@ pkill -RTMIN+1 waybar''}";
         };
         "custom/bt" = {
           exec = "wb-bt";
-          # Dropdown Astal ancré sous l'encoche droite (voir modules/home/ags) :
-          # "ags toggle" bascule la visibilité de la fenêtre nommée (voir
-          # `name` dans le .tsx), déjà lancée en arrière-plan par Hyprland au
-          # démarrage. L'animation d'ouverture est gérée par Hyprland lui-même
-          # (layerrule animation, voir modules/home/hyprland) — un <revealer>
-          # GTK a été essayé mais laissait une "fenêtre fantôme" 200x200
-          # visible même fermée (fallback de taille par défaut d'Astal.Window
-          # quand le contenu réduit à ~0, vérifié via hyprctl layers +
-          # capture d'écran).
-          on-click = "ags toggle bluetooth-panel";
+          # Clic gauche : toggle on/off + reconnexion auto aux appareils déjà
+          # appairés (voir wb-bt ci-dessous) — pas de dropdown ici (essayé,
+          # retiré : trop complexe pour ce qui reste un simple interrupteur).
+          # Clic droit : blueman-manager pour l'appairage/gestion complète
+          # (déjà installé, voir modules/home/apps.nix).
+          on-click = "wb-bt toggle";
+          on-click-right = "blueman-manager";
           signal = 3;
           interval = 30;
           return-type = "json";
@@ -378,16 +375,31 @@ pkill -RTMIN+1 waybar''}";
 
     (pkgs.writeShellScriptBin "wb-bt" ''
       #!/usr/bin/env bash
+      # wb-bt — simple interrupteur bluetooth (pas de dropdown, voir
+      # modules/home/ags/widget/NetworkPanel.tsx pour pourquoi le wifi en a
+      # un et pas le bluetooth : demande explicite de simplification).
+      # toggle : bascule power on/off ; à l'allumage, reconnecte tous les
+      # appareils déjà appairés (bluetoothctl devices Paired, format
+      # "Device XX:XX:XX:XX:XX:XX Nom" — connect en arrière-plan, ne bloque
+      # pas waybar si un appareil ne répond pas).
       state=$(bluetoothctl show 2>/dev/null | grep -q 'Powered: yes' && echo on || echo off)
       if [ "$1" = "toggle" ]; then
-        if [ "$state" = "on" ]; then bluetoothctl power off; else bluetoothctl power on; fi
+        if [ "$state" = "on" ]; then
+          bluetoothctl power off
+        else
+          bluetoothctl power on
+          sleep 1
+          bluetoothctl devices Paired 2>/dev/null | awk '{print $2}' | while read -r mac; do
+            [ -n "$mac" ] && bluetoothctl connect "$mac" >/dev/null 2>&1 &
+          done
+        fi
         pkill -RTMIN+3 waybar
         state=$(bluetoothctl show 2>/dev/null | grep -q 'Powered: yes' && echo on || echo off)
       fi
       if [ "$state" = "on" ]; then
-        echo '{"text":"󰂯","class":"bt-on","tooltip":"Bluetooth actif"}'
+        echo '{"text":"󰂯","class":"bt-on","tooltip":"Bluetooth actif (clic droit : gestion)"}'
       else
-        echo '{"text":"󰂲","class":"bt-off","tooltip":"Bluetooth inactif"}'
+        echo '{"text":"󰂲","class":"bt-off","tooltip":"Bluetooth inactif (clic droit : gestion)"}'
       fi
     '')
 

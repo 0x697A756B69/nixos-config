@@ -75,38 +75,24 @@ let
       background: @base_alt;
     }
 
-    /* Interrupteur bluetooth : GTK4 le peint en bleu par défaut (Adwaita),
-       aucun rapport avec la palette matugen — reteint avec @accent/@base_alt. */
-    switch {
-      background: @base_alt;
-      border-radius: 999px;
-    }
-    switch:checked {
-      background: @accent;
-    }
-    switch slider {
-      background: @text;
-      border-radius: 999px;
-    }
-
     .panel-list {
       padding: 0 6px;
     }
 
-    .ap-row, .bt-row {
+    .ap-row {
       padding: 8px 8px;
       border-radius: 10px;
       color: @text;
       background: transparent;
     }
-    .ap-row:hover, .bt-row:hover {
+    .ap-row:hover {
       background: @base_alt;
     }
     .ap-row:disabled {
       color: @disabled;
     }
 
-    .lock, .strength, .battery, .state {
+    .lock, .strength {
       color: @text_alt;
       font-size: 12px;
     }
@@ -129,7 +115,6 @@ let
     mkdir -p $out/widget
     cp ${./app.ts} $out/app.ts
     cp ${./widget/NetworkPanel.tsx} $out/widget/NetworkPanel.tsx
-    cp ${./widget/BluetoothPanel.tsx} $out/widget/BluetoothPanel.tsx
     cp ${configTs} $out/config.ts
     cp ${styleCss} $out/style.css
     cp ${packageJson} $out/package.json
