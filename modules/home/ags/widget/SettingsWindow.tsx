@@ -2,6 +2,7 @@ import { Variable, bind } from "astal"
 import { App, Astal, Gtk } from "astal/gtk4"
 import WifiTab from "./WifiTab"
 import BluetoothTab from "./BluetoothTab"
+import DisplayTab, { refreshOnOpen as refreshDisplayTab } from "./DisplayTab"
 
 export type TabId = "wifi" | "bluetooth" | "display"
 
@@ -20,15 +21,24 @@ const activeTab = Variable<TabId>("wifi")
 // jamais fermer par erreur depuis un autre module).
 let win: Astal.Window | null = null
 
-export function showTab(tab: TabId) {
+// Point d'entrée unique pour changer d'onglet, que ce soit depuis la
+// sidebar (clic interne) ou depuis "ags request open:X" (clic droit
+// waybar, voir app.ts) — sans ça, cliquer "Écran" dans la sidebar
+// contournerait le rafraîchissement de l'état HDR (refreshOnOpen).
+function switchTo(tab: TabId) {
     activeTab.set(tab)
+    if (tab === "display") refreshDisplayTab()
+}
+
+export function showTab(tab: TabId) {
+    switchTo(tab)
     if (win) win.visible = true
 }
 
 function SidebarButton({ id, label }: { id: TabId; label: string }) {
     return <button
         cssClasses={bind(activeTab).as(t => t === id ? ["sidebar-btn", "active"] : ["sidebar-btn"])}
-        onClicked={() => activeTab.set(id)}
+        onClicked={() => switchTo(id)}
     >
         <label label={label} halign={Gtk.Align.START} hexpand />
     </button>
@@ -41,12 +51,6 @@ function TabContainer(id: TabId, child: Gtk.Widget) {
     return <box visible={bind(activeTab).as(t => t === id)} cssClasses={["tab-content"]}>
         {child}
     </box>
-}
-
-// Placeholder : remplacé par de vrais composants (BluetoothTab/DisplayTab)
-// aux étapes suivantes du plan.
-function TabPlaceholder(id: TabId, text: string) {
-    return TabContainer(id, <label label={text} />)
 }
 
 export default function SettingsWindow() {
@@ -72,7 +76,7 @@ export default function SettingsWindow() {
             <box vertical cssClasses={["content"]}>
                 {TabContainer("wifi", WifiTab())}
                 {TabContainer("bluetooth", BluetoothTab())}
-                {TabPlaceholder("display", "Écran — à venir")}
+                {TabContainer("display", DisplayTab())}
             </box>
         </box>
     </window>

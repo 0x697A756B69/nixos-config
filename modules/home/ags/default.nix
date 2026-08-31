@@ -89,6 +89,25 @@ let
       font-weight: bold;
       color: @text;
     }
+    .display-row {
+      padding: 6px 4px;
+      color: @text;
+    }
+    .display-row button {
+      min-width: 0;
+      padding: 4px 10px;
+      color: @text;
+      background: @base_alt;
+      border-radius: 8px;
+    }
+    .display-row button:hover {
+      background: @accent;
+      color: @on_accent;
+    }
+    .display-row button:disabled {
+      color: @disabled;
+      background: transparent;
+    }
 
     /* Interrupteurs (bluetooth power, etc.) : GTK4 les peint en bleu par
        défaut (Adwaita), aucun rapport avec la palette matugen. */
@@ -142,6 +161,7 @@ let
     cp ${./widget/SettingsWindow.tsx} $out/widget/SettingsWindow.tsx
     cp ${./widget/WifiTab.tsx} $out/widget/WifiTab.tsx
     cp ${./widget/BluetoothTab.tsx} $out/widget/BluetoothTab.tsx
+    cp ${./widget/DisplayTab.tsx} $out/widget/DisplayTab.tsx
     cp ${styleCss} $out/style.css
     cp ${packageJson} $out/package.json
   '';

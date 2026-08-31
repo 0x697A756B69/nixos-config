@@ -31,7 +31,6 @@
           "network#wifi"
           "network#ethernet"
           "custom/bt"
-          "custom/hdr"
           "clock"
           "custom/power"
         ];
@@ -163,13 +162,6 @@ pkill -RTMIN+1 waybar''}";
           on-click-right = "ags request open:wifi";
           tooltip = false;
         };
-        "custom/hdr" = {
-          exec = "wb-hdr";
-          return-type = "json";
-          on-click = "wb-hdr toggle";
-          signal = 10;
-          tooltip = false;
-        };
       };
     };
 
@@ -274,21 +266,13 @@ pkill -RTMIN+1 waybar''}";
         min-width: 24px;
       }
 
-      /* --- Réseau + HDR --- */
+      /* --- Réseau --- */
       #network.wifi, #network.ethernet {
         padding: 0 6px;
         font-size: 13px;
         color: @text;
         min-width: 24px;
       }
-      #custom-hdr {
-        padding: 0 7px;
-        font-size: 12px;
-        font-weight: bold;
-        min-width: 40px;
-      }
-      #custom-hdr.hdr-on { color: @text; }
-      #custom-hdr.hdr-off { color: @disabled; }
     '';
 
     systemd = {
@@ -302,7 +286,6 @@ pkill -RTMIN+1 waybar''}";
     pavucontrol
     pamixer
     socat
-    jq
     hyprlock
 
     (pkgs.writeShellScriptBin "wb-music" ''
@@ -434,58 +417,6 @@ pkill -RTMIN+1 waybar''}";
       #!/usr/bin/env bash
       f="$HOME/.cache/ws$1"
       if [ -f "$f" ]; then cat "$f"; else printf '{"text":"●","class":"inactive"}\n'; fi
-    '')
-    (pkgs.writeShellScriptBin "wb-hdr" ''
-      #!/usr/bin/env bash
-      # wb-hdr — état + toggle HDR du moniteur (Hyprland >= 0.55, config Lua).
-      # Usage:  wb-hdr            → JSON pour waybar (class hdr-on / hdr-off)
-      #         wb-hdr toggle     → bascule cm/bitdepth puis notifie waybar (RTMIN+10)
-      CACHE="$HOME/.cache/wb-hdr"
-
-      read_info() {
-        hyprctl monitors -j 2>/dev/null | jq -r '
-          (map(select(.focused)) | .[0]) // .[0]
-          | [ .name,
-              (.colorManagementPreset // "srgb"),
-              ("\(.width)x\(.height)@\((.refreshRate + 0.5) | floor)"),
-              .scale,
-              "\(.x)x\(.y)" ] | @tsv' 2>/dev/null
-      }
-
-      info=$(read_info)
-      if [ -z "$info" ]; then
-        info=$(cat "$CACHE" 2>/dev/null)
-      fi
-      [ -z "$info" ] && info=$'DP-4\tsrgb\t2560x1440@280\t1\t0x0'
-
-      MON=$(printf '%s' "$info" | cut -f1)
-      CM=$(printf '%s' "$info"   | cut -f2)
-      MODE=$(printf '%s' "$info" | cut -f3)
-      SC=$(printf '%s' "$info"   | cut -f4)
-      POS=$(printf '%s' "$info"  | cut -f5)
-
-      case "$CM" in
-        hdr|hdredid) on=1 ;;
-        *) on=0 ;;
-      esac
-
-      if [ "$1" = "toggle" ]; then
-        if [ "$on" = "1" ]; then
-          CMOUT="srgb"; BITS=8
-        else
-          CMOUT="hdr"; BITS=10
-        fi
-        hyprctl eval "hl.monitor({ output = \"$MON\", mode = \"$MODE\", position = \"$POS\", scale = $SC, cm = \"$CMOUT\", bitdepth = $BITS })" >/dev/null 2>&1
-        printf '%s\t%s\t%s\t%s\t%s\n' "$MON" "$CMOUT" "$MODE" "$SC" "$POS" > "$CACHE"
-        pkill -RTMIN+10 waybar 2>/dev/null
-        CM=$CMOUT
-      fi
-
-      if [ "$CM" = "hdr" ] || [ "$CM" = "hdredid" ]; then
-        printf '{"text":"HDR","class":"hdr-on","tooltip":"HDR activé (%s)"}\n' "$CM"
-      else
-        printf '{"text":"HDR","class":"hdr-off","tooltip":"HDR désactivé"}\n'
-      fi
     '')
     (pkgs.writeShellScriptBin "power-menu" ''
       #!/usr/bin/env bash
