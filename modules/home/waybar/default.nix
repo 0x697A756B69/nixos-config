@@ -3,13 +3,21 @@
 {
   options.styling.modulesRightWidth = lib.mkOption {
     type = lib.types.int;
-    default = 560;
+    default = 584;
     description = ''
       Largeur fixe (px) de l'encoche droite de la waybar (#modules-right :
       cpu, memory, pulseaudio, wifi, ethernet, bluetooth, HDR, horloge,
       power). Réutilisée telle quelle par le dropdown wifi/bluetooth (voir
       modules/home/ags) pour que sa largeur corresponde exactement à
       l'encoche dont il descend — évite toute valeur dupliquée en dur.
+
+      584 (et non 560) : mesuré en conditions réelles (hyprctl layers +
+      échantillonnage de pixel) — le contenu naturel de l'encoche (icônes +
+      paddings des modules) dépasse déjà 560px, donc min-width n'était pas
+      la contrainte réellement appliquée et le dropdown (fixé à 560) se
+      retrouvait 22px plus étroit que l'encoche réelle, d'où le
+      désalignement horizontal. 584 dépasse le contenu naturel : min-width
+      redevient la contrainte active des deux côtés.
     '';
   };
 
@@ -130,8 +138,14 @@ pkill -RTMIN+1 waybar''}";
         "custom/bt" = {
           exec = "wb-bt";
           # Dropdown Astal ancré sous l'encoche droite (voir modules/home/ags) :
-          # "ags toggle" bascule la visibilité de la fenêtre nommée (namespace
-          # dans le .tsx), déjà lancée en arrière-plan par Hyprland au démarrage.
+          # "ags toggle" bascule la visibilité de la fenêtre nommée (voir
+          # `name` dans le .tsx), déjà lancée en arrière-plan par Hyprland au
+          # démarrage. L'animation d'ouverture est gérée par Hyprland lui-même
+          # (layerrule animation, voir modules/home/hyprland) — un <revealer>
+          # GTK a été essayé mais laissait une "fenêtre fantôme" 200x200
+          # visible même fermée (fallback de taille par défaut d'Astal.Window
+          # quand le contenu réduit à ~0, vérifié via hyprctl layers +
+          # capture d'écran).
           on-click = "ags toggle bluetooth-panel";
           signal = 3;
           interval = 30;
