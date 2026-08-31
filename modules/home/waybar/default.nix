@@ -1,7 +1,19 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
-  programs.waybar = {
+  options.styling.modulesRightWidth = lib.mkOption {
+    type = lib.types.int;
+    default = 560;
+    description = ''
+      Largeur fixe (px) de l'encoche droite de la waybar (#modules-right :
+      cpu, memory, pulseaudio, wifi, ethernet, bluetooth, HDR, horloge,
+      power). Réutilisée telle quelle par le dropdown wifi/bluetooth (voir
+      modules/home/ags) pour que sa largeur corresponde exactement à
+      l'encoche dont il descend — évite toute valeur dupliquée en dur.
+    '';
+  };
+
+  config.programs.waybar = {
     enable = true;
 
     settings = {
@@ -197,6 +209,11 @@ pkill -RTMIN+1 waybar''}";
         padding: 0 14px;
         background: @base;
         border-radius: 0 0 16px 16px;
+        /* Largeur fixe (voir options.styling.modulesRightWidth) : les
+           min-width par module ci-dessous garantissent que {usage}%,
+           {percentage}% et {volume}% ne sont jamais tronqués, avec ou
+           sans bluetooth connecté. */
+        min-width: ${toString config.styling.modulesRightWidth}px;
       }
 
       /* --- Gauche : compact, logo NixOS grand et aéré --- */
@@ -232,25 +249,36 @@ pkill -RTMIN+1 waybar''}";
       }
 
       /* --- Droite : compact, palette --- */
-      #cpu { padding: 0 7px; font-size: 13px; color: @text; }
-      #memory { padding: 0 7px; font-size: 13px; color: @text; }
-      #pulseaudio { padding: 0 7px; font-size: 13px; color: @text; }
+      /* min-width par module (plutôt qu'un espacement disproportionné) :
+         évite toute troncature de {usage}%/{percentage}%/{volume}% quel
+         que soit l'état (bluetooth connecté ou non — ce setup n'a pas de
+         module batterie). */
+      #cpu { padding: 0 7px; font-size: 13px; color: @text; min-width: 56px; }
+      #memory { padding: 0 7px; font-size: 13px; color: @text; min-width: 56px; }
+      #pulseaudio { padding: 0 7px; font-size: 13px; color: @text; min-width: 56px; }
       #pulseaudio.muted { color: @disabled; }
-      #custom-bt { padding: 0 7px; font-size: 13px; color: @text; }
+      #custom-bt { padding: 0 7px; font-size: 13px; color: @text; min-width: 26px; }
       #custom-bt.bt-off { color: @disabled; }
-      #clock { padding: 0 7px; font-size: 13px; color: @text; }
+      #clock { padding: 0 7px; font-size: 13px; color: @text; min-width: 50px; }
       #custom-power {
         padding: 0 7px;
         color: @error;
         font-size: 13px;
+        min-width: 24px;
       }
 
       /* --- Réseau + HDR --- */
-      #network.wifi, #network.ethernet { padding: 0 6px; font-size: 13px; color: @text; }
+      #network.wifi, #network.ethernet {
+        padding: 0 6px;
+        font-size: 13px;
+        color: @text;
+        min-width: 24px;
+      }
       #custom-hdr {
         padding: 0 7px;
         font-size: 12px;
         font-weight: bold;
+        min-width: 40px;
       }
       #custom-hdr.hdr-on { color: @text; }
       #custom-hdr.hdr-off { color: @disabled; }
@@ -262,7 +290,7 @@ pkill -RTMIN+1 waybar''}";
   };
 
   # --- Outils consommés par les modules ci-dessus (volume, musique, power menu) ---
-  home.packages = with pkgs; [
+  config.home.packages = with pkgs; [
     playerctl
     pavucontrol
     pamixer
