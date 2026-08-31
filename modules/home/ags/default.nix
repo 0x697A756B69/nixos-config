@@ -34,9 +34,10 @@ let
     }
 
     /* La fenêtre reste transparente : le fond visuel opaque + les coins
-       arrondis sont portés par .panel-box, comme les encoches waybar (voir
-       modules/home/waybar) — même continuité visuelle que l'ancien
-       dropdown. */
+       arrondis sont portés par .panel-box. Fenêtre centrée façon
+       sélecteur d'app (voir modules/home/rofi/config-layout.rasi, même
+       rayon 20px) — coins arrondis des 4 côtés, plus d'"extension" de
+       l'encoche waybar depuis qu'elle ne s'y ancre plus. */
     window.Panel {
       background: transparent;
     }
@@ -44,13 +45,13 @@ let
     .panel-box {
       background: @base;
       color: @text;
-      border-radius: 0 0 16px 16px;
+      border-radius: 20px;
     }
 
     .sidebar {
       padding: 12px 8px;
       min-width: 140px;
-      border-radius: 0 0 0 16px;
+      border-radius: 20px 0 0 20px;
     }
     .sidebar-btn {
       padding: 8px 10px;

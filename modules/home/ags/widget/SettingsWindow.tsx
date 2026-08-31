@@ -1,8 +1,14 @@
 import { Variable, bind } from "astal"
-import { App, Astal, Gtk } from "astal/gtk4"
+import { App, Astal, Gtk, astalify } from "astal/gtk4"
 import WifiTab from "./WifiTab"
 import BluetoothTab from "./BluetoothTab"
 import DisplayTab, { refreshOnOpen as refreshDisplayTab } from "./DisplayTab"
+
+// Gtk.ScrolledWindow n'est pas pré-emballé par astal/gtk4 (absent de
+// widget.ts, contrairement à Box/Button/etc.) — même technique que le
+// fichier source l'utilise pour ses propres widgets : astalify() est
+// exporté publiquement pour ça (voir gtk4/index.ts).
+const ScrolledWindow = astalify<Gtk.ScrolledWindow, Gtk.ScrolledWindow.ConstructorProps>(Gtk.ScrolledWindow)
 
 export type TabId = "wifi" | "bluetooth" | "display"
 
@@ -46,10 +52,15 @@ function SidebarButton({ id, label }: { id: TabId; label: string }) {
 
 // Un seul <box> par onglet, visibilité conditionnée par l'onglet actif
 // (pattern déjà vérifié dans l'ancien NetworkPanel/BluetoothPanel — pas de
-// <stack> GTK non testé ici).
+// <stack> GTK non testé ici). Contenu dans un ScrolledWindow : la fenêtre
+// a une taille fixe (voir .panel-box), donc un onglet avec beaucoup de
+// contenu (la liste de résolutions de l'onglet Écran) doit défiler plutôt
+// que faire grandir la fenêtre.
 function TabContainer(id: TabId, child: Gtk.Widget) {
-    return <box visible={bind(activeTab).as(t => t === id)} cssClasses={["tab-content"]}>
-        {child}
+    return <box visible={bind(activeTab).as(t => t === id)} cssClasses={["tab-content"]} vexpand>
+        <ScrolledWindow vexpand hscrollbarPolicy={Gtk.PolicyType.NEVER} vscrollbarPolicy={Gtk.PolicyType.AUTOMATIC}>
+            {child}
+        </ScrolledWindow>
     </box>
 }
 
@@ -61,11 +72,15 @@ export default function SettingsWindow() {
         cssClasses={["Panel"]}
         exclusivity={Astal.Exclusivity.NORMAL}
         keymode={Astal.Keymode.ON_DEMAND}
-        anchor={Astal.WindowAnchor.TOP | Astal.WindowAnchor.RIGHT}
+        // Centrée comme le sélecteur d'app (rofi, voir modules/home/rofi/
+        // config-layout.rasi) plutôt qu'ancrée sous l'encoche waybar :
+        // aucun anchor posé, laisse le compositeur centrer la surface
+        // layer-shell (comportement par défaut sans ancrage) — à confirmer
+        // visuellement, pas de doc Astal explicite là-dessus.
         application={App}
         setup={self => { win = self }}
     >
-        <box cssClasses={["panel-box"]}>
+        <box cssClasses={["panel-box"]} widthRequest={640} heightRequest={640}>
             <box vertical cssClasses={["sidebar"]}>
                 {TABS.map(SidebarButton)}
                 <box vexpand />
@@ -73,7 +88,7 @@ export default function SettingsWindow() {
                     <label label="Fermer" halign={Gtk.Align.START} hexpand />
                 </button>
             </box>
-            <box vertical cssClasses={["content"]}>
+            <box vertical cssClasses={["content"]} hexpand>
                 {TabContainer("wifi", WifiTab())}
                 {TabContainer("bluetooth", BluetoothTab())}
                 {TabContainer("display", DisplayTab())}

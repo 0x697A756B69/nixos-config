@@ -126,8 +126,15 @@ function MonitorSection(monitor: AstalHyprland.Monitor) {
         </box>
 
         <label label="Résolution / taux de rafraîchissement" halign={Gtk.Align.START} cssClasses={["muted"]} />
-        <box vertical>
-            {bind(availableModes).as(modes => modes.map(m => ModeRow(monitor, m)))}
+        <box spacing={8}>
+            {bind(availableModes).as(modes => {
+                const mid = Math.ceil(modes.length / 2)
+                const columns = [modes.slice(0, mid), modes.slice(mid)]
+                return columns.map(col =>
+                    <box vertical hexpand>
+                        {col.map(m => ModeRow(monitor, m))}
+                    </box>)
+            })}
         </box>
     </box>
 }
