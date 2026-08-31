@@ -1,6 +1,7 @@
 import { Variable, bind } from "astal"
 import { App, Astal, Gtk } from "astal/gtk4"
 import WifiTab from "./WifiTab"
+import BluetoothTab from "./BluetoothTab"
 
 export type TabId = "wifi" | "bluetooth" | "display"
 
@@ -70,7 +71,7 @@ export default function SettingsWindow() {
             </box>
             <box vertical cssClasses={["content"]}>
                 {TabContainer("wifi", WifiTab())}
-                {TabPlaceholder("bluetooth", "Bluetooth — à venir")}
+                {TabContainer("bluetooth", BluetoothTab())}
                 {TabPlaceholder("display", "Écran — à venir")}
             </box>
         </box>

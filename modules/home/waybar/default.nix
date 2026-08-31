@@ -120,10 +120,10 @@ pkill -RTMIN+1 waybar''}";
           # Clic gauche : toggle on/off + reconnexion auto aux appareils déjà
           # appairés (voir wb-bt ci-dessous) — pas de dropdown ici (essayé,
           # retiré : trop complexe pour ce qui reste un simple interrupteur).
-          # Clic droit : blueman-manager pour l'appairage/gestion complète
-          # (déjà installé, voir modules/home/apps.nix).
+          # Clic droit : app de réglages (voir modules/home/ags), onglet
+          # Bluetooth — remplace blueman-manager (non thémé).
           on-click = "wb-bt toggle";
-          on-click-right = "blueman-manager";
+          on-click-right = "ags request open:bluetooth";
           signal = 3;
           interval = 30;
           return-type = "json";
