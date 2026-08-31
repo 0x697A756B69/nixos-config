@@ -5,7 +5,8 @@
     type = lib.types.package;
     description = ''
       Palette Material You dérivée du wallpaper par matugen (au build).
-      Répertoire contenant colors.css (@define-color), kitty.conf et zenChrome.css.
+      Répertoire contenant colors.css (@define-color), colors-matugen.lua
+      (nvim), kitty.conf et zenChrome.css.
       Change de wallpaper => cette palette est régénérée au rebuild.
     '';
   };
@@ -36,6 +37,25 @@
     deep=$((0x$(printf '%s' "$rgb" | cut -c5-6)))
     printf '@define-color base_glass rgba(%s, %s, %s, 0.45);\n' "$hard" "$soft" "$deep" >> $out/colors.css
     grep -q '@define-color' $out/colors.css
+    # --- Neovim : table Lua chargée par theme.lua (voir modules/home/nvim) ---
+    # Mêmes rôles Material You que colors.css/kitty.conf, + secondary/tertiary
+    # pour distinguer chaînes/constantes (secondary) et types (tertiary) dans
+    # la coloration syntaxique treesitter.
+    jq -r '
+      "return {",
+      "  foreground = \"" + .colors.on_surface.dark.color         + "\",",
+      "  comment    = \"" + .colors.on_surface_variant.dark.color + "\",",
+      "  accent     = \"" + .colors.primary.dark.color            + "\",",
+      "  on_accent  = \"" + .colors.on_primary.dark.color         + "\",",
+      "  surface    = \"" + .colors.surface_variant.dark.color    + "\",",
+      "  background = \"" + .colors.surface.dark.color            + "\",",
+      "  error      = \"" + .colors.error.dark.color              + "\",",
+      "  border     = \"" + .colors.outline.dark.color            + "\",",
+      "  secondary  = \"" + .colors.secondary.dark.color          + "\",",
+      "  tertiary   = \"" + .colors.tertiary.dark.color           + "\",",
+      "}"
+    ' palette.json > $out/colors-matugen.lua
+    grep -q '^return {' $out/colors-matugen.lua
     # --- Kitty : fond/texte/curseur + 16 couleurs ANSI (base16) ---
     jq -r '
       "background            " + .colors.surface_variant.dark.color,

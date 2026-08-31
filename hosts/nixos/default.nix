@@ -15,7 +15,6 @@
     ../../modules/system/printing.nix
     ../../modules/system/steam.nix
     ../../modules/system/spicetify.nix
-    ../../modules/system/nixvim.nix
     ../../modules/system/misc-programs.nix
     ../../modules/system/system-packages.nix
   ];

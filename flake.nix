@@ -39,10 +39,11 @@
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.extraSpecialArgs = { inherit inputs self; };
-          home-manager.users.izuki = import ./home.nix;
+          home-manager.users.izuki = {
+            imports = [ ./home.nix nixvim.homeModules.nixvim ];
+          };
           home-manager.backupFileExtension = "backup";
         }
-        nixvim.nixosModules.nixvim
       ];
     };
   };
