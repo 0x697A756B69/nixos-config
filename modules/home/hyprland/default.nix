@@ -76,6 +76,7 @@ in
               hl.exec_cmd("mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 ${wallpaper}")
               hl.exec_cmd("wb-wsd")
               hl.exec_cmd("waybar")
+              hl.exec_cmd("wb-dropdown")
             end
           '')
         ];

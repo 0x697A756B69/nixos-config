@@ -12,6 +12,7 @@
     ./modules/home/kitty
     ./modules/home/wofi
     ./modules/home/rofi
+    ./modules/home/ags
     ./modules/home/nvim
     ./modules/home/zen.nix
     ./modules/home/apps.nix

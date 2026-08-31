@@ -129,7 +129,10 @@ pkill -RTMIN+1 waybar''}";
         };
         "custom/bt" = {
           exec = "wb-bt";
-          on-click = "rofi-bluetooth -theme $HOME/.config/rofi/catppuccin-mocha.rasi";
+          # Dropdown Astal ancré sous l'encoche droite (voir modules/home/ags) :
+          # "ags toggle" bascule la visibilité de la fenêtre nommée (namespace
+          # dans le .tsx), déjà lancée en arrière-plan par Hyprland au démarrage.
+          on-click = "ags toggle bluetooth-panel";
           signal = 3;
           interval = 30;
           return-type = "json";
@@ -150,6 +153,7 @@ pkill -RTMIN+1 waybar''}";
           format-wifi = "{icon}";
           format-icons = [ "󰤯" "󰤟" "󰤢" "󰤨" ];
           format-disconnected = "";
+          on-click = "ags toggle network-panel";
           tooltip = false;
         };
         "network#ethernet" = {
@@ -157,6 +161,7 @@ pkill -RTMIN+1 waybar''}";
           interface = "en*";
           format-ethernet = "󰈀";
           format-disconnected = "";
+          on-click = "ags toggle network-panel";
           tooltip = false;
         };
         "custom/hdr" = {
