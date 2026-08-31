@@ -6,7 +6,7 @@
     description = ''
       Palette Material You dérivée du wallpaper par matugen (au build).
       Répertoire contenant colors.css (@define-color), colors-matugen.lua
-      (nvim), kitty.conf et zenChrome.css.
+      (nvim), rofi-colors.rasi, kitty.conf et zenChrome.css.
       Change de wallpaper => cette palette est régénérée au rebuild.
     '';
   };
@@ -56,6 +56,29 @@
       "}"
     ' palette.json > $out/colors-matugen.lua
     grep -q '^return {' $out/colors-matugen.lua
+    # --- Rofi : syntaxe .rasi (pas CSS -> pas de @define-color) ---
+    # Mêmes rôles Material You que colors.css, + error-soft (variante
+    # translucide de error, même technique que base_glass ci-dessus) et
+    # radius (rayon de coin partagé par les layouts *-layout.rasi).
+    jq -r '
+      "* {",
+      "  base:      " + .colors.surface.dark.color         + ";",
+      "  base-alt:  " + .colors.surface_variant.dark.color + ";",
+      "  text:      " + .colors.on_surface.dark.color      + ";",
+      "  text-alt:  " + .colors.on_surface_variant.dark.color + ";",
+      "  accent:    " + .colors.primary.dark.color         + ";",
+      "  on-accent: " + .colors.on_primary.dark.color      + ";",
+      "  border:    " + .colors.surface_variant.dark.color + ";",
+      "  error:     " + .colors.error.dark.color           + ";",
+      "  radius:    16px;",
+      "}"
+    ' palette.json > $out/rofi-colors.rasi
+    erb=$(jq -r '.colors.error.dark.color' palette.json | tr -d '#')
+    er=$((0x$(printf '%s' "$erb" | cut -c1-2)))
+    eg=$((0x$(printf '%s' "$erb" | cut -c3-4)))
+    eb=$((0x$(printf '%s' "$erb" | cut -c5-6)))
+    sed -i "s/^}/  error-soft: rgba($er, $eg, $eb, 0.18);\n}/" $out/rofi-colors.rasi
+    grep -q 'error-soft' $out/rofi-colors.rasi
     # --- Kitty : fond/texte/curseur + 16 couleurs ANSI (base16) ---
     jq -r '
       "background            " + .colors.surface_variant.dark.color,
