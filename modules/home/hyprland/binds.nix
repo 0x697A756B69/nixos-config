@@ -1,5 +1,5 @@
 # Hyprland keybinds (Lua config via hl.dsp.*).
-{ mainMod, terminal, menu, inline, wallpaper }:
+{ mainMod, terminal, menu, inline }:
 
 [
   { _args = [ "${mainMod} + Return" (inline "hl.dsp.exec_cmd(\"${terminal}\")") ]; }
@@ -52,8 +52,10 @@
   { _args = [ "${mainMod} + CTRL + up"    (inline "hl.dsp.exec_cmd(\"resize_window up\")")    { repeating = true; } ]; }
   { _args = [ "${mainMod} + CTRL + down"  (inline "hl.dsp.exec_cmd(\"resize_window down\")")  { repeating = true; } ]; }
 
-  # --- Animated wallpaper: restart mpvpaper ---
-  { _args = [ "${mainMod} + B" (inline "hl.dsp.exec_cmd(\"pkill mpvpaper; sleep 0.2; mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 ${wallpaper}\")") ]; }
+  # --- Wallpaper: restart with the current/persisted choice ---
+  { _args = [ "${mainMod} + B" (inline "hl.dsp.exec_cmd(\"wb-wallpaper\")") ]; }
+  # --- Wallpaper: open the picker tab in the settings app ---
+  { _args = [ "${mainMod} + W" (inline "hl.dsp.exec_cmd(\"wb-settings openTab wallpaper\")") ]; }
 
   # --- Screenshot (Plasma-style: area + clipboard) ---
   { _args = [ "Print" (inline "hl.dsp.exec_cmd(\"wb-cap area\")") ]; }

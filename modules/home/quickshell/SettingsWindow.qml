@@ -34,7 +34,8 @@ PanelWindow {
     readonly property var tabs: [
         { id: "wifi", label: "Wi-Fi", icon: "󰖩" },
         { id: "bluetooth", label: "Bluetooth", icon: "󰂯" },
-        { id: "display", label: "Écran", icon: "󰍹" }
+        { id: "display", label: "Écran", icon: "󰍹" },
+        { id: "wallpaper", label: "Fond d'écran", icon: "󰸉" }
     ]
 
     // Single entry point for tab switching (rail or IPC): guarantees the
@@ -170,6 +171,10 @@ PanelWindow {
                     id: displayPage
                     anchors.fill: parent
                     visible: root.currentTab === "display"
+                }
+                WallpaperPage {
+                    anchors.fill: parent
+                    visible: root.currentTab === "wallpaper"
                 }
             }
         }

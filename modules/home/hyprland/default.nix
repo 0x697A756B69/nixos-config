@@ -65,7 +65,7 @@ in
         };
       };
 
-      bind = import ./binds.nix { inherit mainMod terminal menu inline wallpaper; };
+      bind = import ./binds.nix { inherit mainMod terminal menu inline; };
 
       on = {
         _args = [
@@ -73,7 +73,7 @@ in
           (inline ''
             function()
               hl.exec_cmd("${py}/bin/python ${core} 1.6 > /tmp/infinite-desktop.log 2>&1")
-              hl.exec_cmd("mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 ${wallpaper}")
+              hl.exec_cmd("wb-wallpaper")
               hl.exec_cmd("wb-wsd")
               hl.exec_cmd("waybar")
               hl.exec_cmd("wb-dropdown")
@@ -87,6 +87,7 @@ in
   # --- Tools used by the Hyprland binds (wallpaper, screenshots) ---
   home.packages = with pkgs; [
     mpvpaper
+    awww
     grim
     slurp
     grimblast
@@ -94,6 +95,42 @@ in
     wf-recorder
     wl-clipboard
     libnotify
+
+    (pkgs.writeShellScriptBin "wb-wallpaper" ''
+      #!/usr/bin/env bash
+      # wb-wallpaper [path]: switch (or restart) the desktop wallpaper and
+      # re-theme from it. With no argument, re-applies the persisted choice
+      # (falling back to the default) -- used at session startup, the
+      # SUPER+B restart bind, and the Quickshell wallpaper tab. Videos go
+      # through mpvpaper (no transition); stills go through awww (animated
+      # transition) -- awww itself has no video support, hence the dispatch.
+      set -euo pipefail
+      statefile="$HOME/.local/state/wallpaper/path.txt"
+      mkdir -p "$(dirname "$statefile")"
+      path="''${1:-}"
+      if [ -z "$path" ]; then
+        path=$(cat "$statefile" 2>/dev/null || true)
+        [ -z "$path" ] && path="${wallpaper}"
+      fi
+      printf '%s' "$path" > "$statefile"
+
+      case "$path" in
+        *.mp4|*.mkv|*.webm|*.mov)
+          pkill awww-daemon 2>/dev/null || true
+          pkill mpvpaper 2>/dev/null || true
+          sleep 0.2
+          ${pkgs.mpvpaper}/bin/mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 "$path" &
+          disown
+          ;;
+        *)
+          pkill mpvpaper 2>/dev/null || true
+          pgrep -x awww-daemon >/dev/null 2>&1 || { ${pkgs.awww}/bin/awww-daemon & disown; sleep 0.3; }
+          ${pkgs.awww}/bin/awww img "$path" --resize crop --transition-type grow --transition-duration 1
+          ;;
+      esac
+
+      theme-apply "$path"
+    '')
 
     (pkgs.writeShellScriptBin "wb-cap" ''
       #!/usr/bin/env bash
