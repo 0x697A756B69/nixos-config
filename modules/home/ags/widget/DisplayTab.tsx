@@ -5,8 +5,8 @@ import IconToggle from "./IconToggle"
 
 const hypr = AstalHyprland.get_default()
 
-// AstalHyprland n'expose ni l'état HDR ni des available-modes fiables
-// (toujours null sur ce matériel) : les deux sont lus via `hyprctl -j monitors`.
+// AstalHyprland exposes neither HDR state nor reliable available-modes
+// (always null on this hardware): both are read via `hyprctl -j monitors`.
 const hdrOn = Variable(false)
 const availableModes = Variable<string[]>([])
 
@@ -23,16 +23,16 @@ function refreshMonitorInfo(monitorName: string) {
         .catch(() => { })
 }
 
-// Appelé depuis showTab() : le composant n'est construit qu'une fois
-// (fenêtre toujours mappée), donc resync à l'ouverture, pas à la construction.
+// Called from showTab(): the component is only built once (window stays
+// mapped), so resync on open rather than on construction.
 export function refreshOnOpen() {
     const monitors = hypr.get_monitors()
     if (monitors[0]) refreshMonitorInfo(monitors[0].name)
 }
 
-// Un seul point d'écriture : envoie toujours l'état complet connu
-// (mode/position/scale/cm/bitdepth/vrr) pour éviter qu'un changement
-// partiel ne réinitialise le reste.
+// Single write path: always send the full known state
+// (mode/position/scale/cm/bitdepth/vrr) so a partial update
+// doesn't reset the rest.
 function applyMonitor(monitor: AstalHyprland.Monitor, overrides: {
     mode?: string
     scale?: number

@@ -1,4 +1,4 @@
-# Raccourcis clavier Hyprland (config Lua via hl.dsp.*).
+# Hyprland keybinds (Lua config via hl.dsp.*).
 { mainMod, terminal, menu, inline, wallpaper }:
 
 [
@@ -9,23 +9,23 @@
   { _args = [ "${mainMod} + V"      (inline "hl.dsp.window.float({ action = \"toggle\" })") ]; }
   { _args = [ "${mainMod} + F"      (inline "hl.dsp.window.fullscreen({ action = \"toggle\" })") ]; }
 
-  # Fallback grappe F10/F11/F12 si la machine n'émet pas XF86Audio*
-  # --- Volume : Fn+F10 baisser, Fn+F11 monter, Fn+F12 mute ---
+  # Fallback for machines without XF86Audio* keys
+  # --- Volume: Fn+F10 down, Fn+F11 up, Fn+F12 mute ---
   { _args = [ "XF86AudioLowerVolume" (inline "hl.dsp.exec_cmd(\"pamixer -d 5\")") ]; }
   { _args = [ "XF86AudioRaiseVolume" (inline "hl.dsp.exec_cmd(\"pamixer -i 5\")") ]; }
   { _args = [ "XF86AudioMute" (inline "hl.dsp.exec_cmd(\"pamixer -t\")") ]; }
-  # --- Média : Fn aussi pour next/prev/play ---
+  # --- Media: Fn for next/prev/play ---
   { _args = [ "XF86AudioNext" (inline "hl.dsp.exec_cmd(\"playerctl next\")") ]; }
   { _args = [ "XF86AudioPrev" (inline "hl.dsp.exec_cmd(\"playerctl previous\")") ]; }
   { _args = [ "XF86AudioPlay" (inline "hl.dsp.exec_cmd(\"playerctl play-pause\")") ]; }
 
-  # --- Workspaces (dépôt) ---
+  # --- Workspaces ---
   { _args = [ "${mainMod} + Z" (inline "hl.dsp.focus({ workspace = \"-1\" })") ]; }
   { _args = [ "${mainMod} + X" (inline "hl.dsp.focus({ workspace = \"+1\" })") ]; }
   { _args = [ "${mainMod} + SHIFT + Z" (inline "hl.dsp.window.move({ workspace = \"-1\" })") ]; }
   { _args = [ "${mainMod} + SHIFT + X" (inline "hl.dsp.window.move({ workspace = \"+1\" })") ]; }
 
-  # --- Toggle flottant toutes fenêtres ---
+  # --- Toggle floating for all windows ---
   { _args = [ "${mainMod} + D" (inline "hl.dsp.exec_cmd(\"floating_tile_toggle\")") ]; }
 
   # --- Navigation ---
@@ -52,12 +52,12 @@
   { _args = [ "${mainMod} + CTRL + up"    (inline "hl.dsp.exec_cmd(\"resize_window up\")")    { repeating = true; } ]; }
   { _args = [ "${mainMod} + CTRL + down"  (inline "hl.dsp.exec_cmd(\"resize_window down\")")  { repeating = true; } ]; }
 
-  # --- Wallpaper animé: restart mpvpaper ---
+  # --- Animated wallpaper: restart mpvpaper ---
   { _args = [ "${mainMod} + B" (inline "hl.dsp.exec_cmd(\"pkill mpvpaper; sleep 0.2; mpvpaper -o 'no-audio loop --cache=no --demuxer-max-bytes=64MiB --demuxer-max-back-bytes=16MiB' DP-4 ${wallpaper}\")") ]; }
 
-  # --- Capture d'écran (façon Plasma : zone + presse-papiers) ---
+  # --- Screenshot (Plasma-style: area + clipboard) ---
   { _args = [ "Print" (inline "hl.dsp.exec_cmd(\"wb-cap area\")") ]; }
   { _args = [ "SHIFT + Print" (inline "hl.dsp.exec_cmd(\"wb-cap screen\")") ]; }
-  # --- Vidéo : toggle zone d'enregistrement ---
+  # --- Video: toggle screen recording ---
   { _args = [ "${mainMod} + SHIFT + R" (inline "hl.dsp.exec_cmd(\"wb-cap record\")") ]; }
 ]

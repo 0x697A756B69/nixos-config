@@ -4,7 +4,7 @@
   options.styling.palette = lib.mkOption {
     type = lib.types.package;
     description = ''
-      Palette Material You dérivée du wallpaper par matugen au build.
+      Material You palette derived from the wallpaper by matugen at build time.
       colors.css, colors-matugen.lua, rofi-colors.rasi, kitty.conf, zenChrome.css.
     '';
   };
@@ -28,14 +28,14 @@
       "@define-color border    " + .colors.surface_variant.dark.color + ";",
       "@define-color warning   " + .colors.tertiary.dark.color        + ";"
     ' palette.json > $out/colors.css
-    # Variante translucide du fond ("verre dépoli")
+    # Translucent variant of the surface color ("frosted glass")
     rgb=$(jq -r '.colors.surface.dark.color' palette.json | tr -d '#')
     hard=$((0x$(printf '%s' "$rgb" | cut -c1-2)))
     soft=$((0x$(printf '%s' "$rgb" | cut -c3-4)))
     deep=$((0x$(printf '%s' "$rgb" | cut -c5-6)))
     printf '@define-color base_glass rgba(%s, %s, %s, 0.45);\n' "$hard" "$soft" "$deep" >> $out/colors.css
     grep -q '@define-color' $out/colors.css
-    # Table Lua chargée par theme.lua (nvim)
+    # Lua table loaded by theme.lua (nvim)
     jq -r '
       "return {",
       "  foreground = \"" + .colors.on_surface.dark.color         + "\",",
@@ -51,7 +51,7 @@
       "}"
     ' palette.json > $out/colors-matugen.lua
     grep -q '^return {' $out/colors-matugen.lua
-    # Rofi : syntaxe .rasi, pas de @define-color
+    # Rofi: .rasi syntax, no @define-color
     jq -r '
       "* {",
       "  base:      " + .colors.surface.dark.color         + ";",
@@ -71,7 +71,7 @@
     eb=$((0x$(printf '%s' "$erb" | cut -c5-6)))
     sed -i "s/^}/  error-soft: rgba($er, $eg, $eb, 0.18);\n}/" $out/rofi-colors.rasi
     grep -q 'error-soft' $out/rofi-colors.rasi
-    # Kitty : fond/texte/curseur + 16 couleurs ANSI
+    # Kitty: background/foreground/cursor + 16 ANSI colors
     jq -r '
       "background            " + .colors.surface_variant.dark.color,
       "foreground            " + .colors.on_surface.dark.color,
@@ -81,7 +81,7 @@
       "selection_foreground  " + .colors.on_primary.dark.color
     ' palette.json > $out/kitty.conf
     printf 'background_opacity 0.40\n' >> $out/kitty.conf
-    # Clamp de luminance : garantit la lisibilité sur fond translucide.
+    # Luminance clamp: keeps colors readable on a translucent background.
     jq -r '
       ("0123456789abcdef" as $hex
        | def dv(c): ($hex|index(c)) as $i | if $i == null then error("hex digit") else $i end;
@@ -103,7 +103,7 @@
             | "color\($k) #\(hx($nr))\(hx($ng))\(hx($nb))"))
     ' palette.json >> $out/kitty.conf
     grep -q '^color15 ' $out/kitty.conf
-    # Zen Browser : ''${var} échappé pour rester un littéral bash, pas interpolé par Nix.
+    # Zen Browser: ''${var} escaped to stay a bash literal, not interpolated by Nix.
     rgba() {
       local h a r g b
       h=$(printf '%s' "$1" | tr -d '#')

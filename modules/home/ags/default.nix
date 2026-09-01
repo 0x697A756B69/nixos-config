@@ -1,12 +1,12 @@
-# App de réglages unifiée (Wi-Fi / Bluetooth / Écran). AGS v2 + Astal
-# (AstalNetwork/AstalBluetooth/AstalHyprland). Ouverte via clic droit sur
-# les modules waybar correspondants (voir modules/home/waybar).
+# Unified settings app (Wi-Fi / Bluetooth / Display). AGS v2 + Astal
+# (AstalNetwork/AstalBluetooth/AstalHyprland). Opened via right-click on
+# the matching waybar modules (see modules/home/waybar).
 #
-# - Pas de `ags bundle` : source TS/TSX copiée telle quelle dans le store,
-#   lancée via `ags run app.ts` (package.json pointe "astal" vers le store).
-# - Couleurs matugen inlinées dans le CSS (readFile), pas de @import : le
-#   CSS GTK4 d'Astal ne propage pas les @define-color d'un fichier importé.
-# - GI_TYPELIB_PATH doit être posé explicitement (le paquet ags ne le fait pas).
+# - No `ags bundle`: TS/TSX source is copied as-is into the store, run via
+#   `ags run app.ts` (package.json points "astal" at the store path).
+# - Matugen colors are inlined into the CSS (readFile), not @import: Astal's
+#   GTK4 CSS doesn't propagate @define-color from an imported file.
+# - GI_TYPELIB_PATH must be set explicitly (the ags package doesn't set it).
 { config, pkgs, lib, ... }:
 
 let
@@ -19,8 +19,8 @@ let
       font-family: "JetBrains Mono Nerd Font";
     }
 
-    /* Fenêtre transparente : fond translucide + coins arrondis portés par
-       .panel-box. Flou réel via layer_rule Hyprland (modules/home/hyprland). */
+    /* Transparent window: translucent background + rounded corners are
+       carried by .panel-box. Real blur via Hyprland layer_rule (modules/home/hyprland). */
     window.Panel {
       background: transparent;
     }
@@ -83,7 +83,7 @@ let
       background: transparent;
     }
 
-    /* Bouton-icône (widget/IconToggle.tsx) à la place du <switch> GTK. */
+    /* Icon button (widget/IconToggle.tsx) in place of the GTK <switch>. */
     .icon-toggle {
       padding: 6px 10px;
       border-radius: 10px;
@@ -129,7 +129,7 @@ let
     dependencies.astal = "${astalGjs}/share/astal/gjs";
   });
 
-  # Répertoire exécuté directement par `ags run`.
+  # Directory run directly by `ags run`.
   agsShellSrc = pkgs.runCommand "ags-shell-src" { } ''
     mkdir -p $out/widget
     cp ${./app.ts} $out/app.ts
@@ -158,9 +158,9 @@ in
   options.programs.ags-shell.package = lib.mkOption {
     type = lib.types.package;
     description = ''
-      Répertoire source de l'app de réglages AGS/Astal (app.ts + widget/).
-      Lancé par le script wb-dropdown (GI_TYPELIB_PATH correct), exécuté au
-      démarrage de la session (voir modules/home/hyprland).
+      Source directory of the AGS/Astal settings app (app.ts + widget/).
+      Launched by wb-dropdown (with GI_TYPELIB_PATH set) at session
+      startup (see modules/home/hyprland).
     '';
   };
 

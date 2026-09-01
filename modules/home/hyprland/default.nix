@@ -26,14 +26,14 @@ in
         scale = 1;
       };
 
-      # Flou géré globalement par decoration.blur.xray ; window_rule n'a pas de champ blur.
+      # Blur is handled globally by decoration.blur.xray; window_rule has no blur field.
       window_rule = {
         match.class = "zen";
         opacity = "0.95 0.95";
       };
 
-      # Fenêtre app de réglages toujours mappée, visibilité pilotée en JS (SettingsWindow.tsx).
-      # blur requis ici : les layer-shell n'héritent pas de blur.xray global.
+      # Settings window stays mapped; visibility is toggled in JS (SettingsWindow.tsx).
+      # blur is required here: layer-shells don't inherit the global blur.xray.
       layer_rule = {
         match.namespace = "^(settings-window)$";
         animation = "pop";
@@ -87,7 +87,7 @@ in
     };
   };
 
-  # --- Outils consommés par les binds Hyprland (wallpaper, capture d'écran) ---
+  # --- Tools used by the Hyprland binds (wallpaper, screenshots) ---
   home.packages = with pkgs; [
     mpvpaper
     grim
@@ -100,7 +100,7 @@ in
 
     (pkgs.writeShellScriptBin "wb-cap" ''
       #!/usr/bin/env bash
-      # wb-cap — capture d'écran + vidéo (façon Plasma Wayland).
+      # wb-cap: screenshot + video capture (Plasma Wayland style).
       # Usage: wb-cap area|screen|record
       mkdir -p "$HOME/Images" "$HOME/Videos"
       case "$1" in

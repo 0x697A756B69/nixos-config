@@ -5,7 +5,7 @@ import IconToggle from "./IconToggle"
 
 const network = AstalNetwork.get_default()
 
-// Réseaux ouverts uniquement : pas de saisie de mot de passe ici.
+// Open networks only: no password entry here.
 function AccessPointRow(ap: AstalNetwork.AccessPoint) {
     const openNetwork = !ap.requiresPassword
 

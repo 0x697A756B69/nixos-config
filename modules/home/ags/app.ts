@@ -7,7 +7,7 @@ App.start({
     main() {
         SettingsWindow()
     },
-    // open:<tab> force l'onglet et affiche la fenêtre ; open garde l'onglet actif et toggle.
+    // open:<tab> forces the tab and shows the window; open keeps the current tab and toggles.
     requestHandler(request, res) {
         switch (request) {
             case "open:wifi":

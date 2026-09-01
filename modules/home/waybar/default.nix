@@ -12,7 +12,7 @@
         margin-top = 0;
         spacing = 10;
 
-        # Gauche : logo + menu + musique
+        # Left: logo + menu + music
         modules-left = [
           "custom/logo"
           "custom/settings"
@@ -21,9 +21,9 @@
           "custom/next"
           "custom/music"
         ];
-        # Centre : 3 ronds workspaces (événementiel)
+        # Center: 3 workspace dots (event-driven)
         modules-center = [ "custom/ws1" "custom/ws2" "custom/ws3" ];
-        # Droite : cpu + ram + volume + wifi + ethernet + bt + HDR + heure + power
+        # Right: cpu + ram + volume + wifi + ethernet + bt + clock + power
         modules-right = [
           "cpu"
           "memory"
@@ -39,7 +39,7 @@
           tooltip = false;
         };
         "custom/settings" = {
-          # Ouvre l'app de réglages sur l'onglet déjà actif.
+          # Opens the settings app on the already-active tab.
           format = "󰒓";
           on-click = "ags request open";
           tooltip = false;
@@ -117,7 +117,7 @@ pkill -RTMIN+1 waybar''}";
         };
         "custom/bt" = {
           exec = "wb-bt";
-          # Clic gauche : toggle + reconnexion auto (wb-bt). Clic droit : onglet Bluetooth.
+          # Left click: toggle + auto-reconnect (wb-bt). Right click: Bluetooth tab.
           on-click = "wb-bt toggle";
           on-click-right = "ags request open:bluetooth";
           signal = 3;
@@ -135,7 +135,7 @@ pkill -RTMIN+1 waybar''}";
           tooltip = false;
         };
         "network#wifi" = {
-          # Clic gauche : toggle radio (wb-net). Clic droit : onglet Wi-Fi.
+          # Left click: toggle radio (wb-net). Right click: Wi-Fi tab.
           interface = "wlp*";
           format-wifi = "{icon}";
           format-icons = [ "󰤯" "󰤟" "󰤢" "󰤨" ];
@@ -178,7 +178,7 @@ pkill -RTMIN+1 waybar''}";
         color: @text;
       }
 
-      /* --- Encoches : opaque (contrairement aux apps translucides + flou) --- */
+      /* --- Notches: opaque (unlike the translucent + blurred apps) --- */
       #waybar .modules-left {
         padding: 0 12px;
         background: @base;
@@ -196,7 +196,7 @@ pkill -RTMIN+1 waybar''}";
         border-radius: 0 0 16px 16px;
       }
 
-      /* --- Gauche : compact, logo NixOS grand et aéré --- */
+      /* --- Left: compact, big airy NixOS logo --- */
       #custom-logo {
         padding: 0 6px;
         margin-right: 16px;
@@ -210,7 +210,7 @@ pkill -RTMIN+1 waybar''}";
       }
       #custom-music { padding: 0 5px; font-size: 13px; color: @text_alt; }
 
-      /* --- Centre : encoche serrée, rectangle actif sobre, points tassés --- */
+      /* --- Center: tight notch, plain active pill, packed dots --- */
       #custom-ws1, #custom-ws2, #custom-ws3 {
         margin: 8px 2px;
         font-size: 14px;
@@ -228,7 +228,7 @@ pkill -RTMIN+1 waybar''}";
         min-height: 22px;
       }
 
-      /* --- Droite : compact, palette --- */
+      /* --- Right: compact, palette --- */
       #cpu { padding: 0 7px; font-size: 13px; color: @text; min-width: 56px; }
       #memory { padding: 0 7px; font-size: 13px; color: @text; min-width: 56px; }
       #pulseaudio { padding: 0 7px; font-size: 13px; color: @text; min-width: 56px; }
@@ -243,7 +243,7 @@ pkill -RTMIN+1 waybar''}";
         min-width: 24px;
       }
 
-      /* --- Réseau --- */
+      /* --- Network --- */
       #network.wifi, #network.ethernet {
         padding: 0 6px;
         font-size: 13px;
@@ -257,7 +257,7 @@ pkill -RTMIN+1 waybar''}";
     };
   };
 
-  # --- Outils consommés par les modules ci-dessus (volume, musique, power menu) ---
+  # --- Tools used by the modules above (volume, music, power menu) ---
   home.packages = with pkgs; [
     playerctl
     pavucontrol
@@ -324,8 +324,8 @@ pkill -RTMIN+1 waybar''}";
 
     (pkgs.writeShellScriptBin "wb-net" ''
       #!/usr/bin/env bash
-      # Bascule le radio wifi (nmcli). Pas de script d'état : le module natif
-      # waybar "network" surveille déjà NetworkManager via DBus.
+      # Toggles the wifi radio (nmcli). No state script: waybar's native
+      # "network" module already watches NetworkManager over DBus.
       if [ "$1" = "toggle" ]; then
         state=$(nmcli radio wifi)
         if [ "$state" = "enabled" ]; then nmcli radio wifi off; else nmcli radio wifi on; fi
@@ -334,7 +334,7 @@ pkill -RTMIN+1 waybar''}";
 
     (pkgs.writeShellScriptBin "wb-bt" ''
       #!/usr/bin/env bash
-      # toggle : bascule power, puis reconnecte les appareils déjà appairés en arrière-plan.
+      # toggle: flips power, then reconnects already-paired devices in the background.
       state=$(bluetoothctl show 2>/dev/null | grep -q 'Powered: yes' && echo on || echo off)
       if [ "$1" = "toggle" ]; then
         if [ "$state" = "on" ]; then

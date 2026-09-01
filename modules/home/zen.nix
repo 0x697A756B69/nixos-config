@@ -6,13 +6,13 @@
     default = inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default;
     defaultText = lib.literalExpression
       "inputs.zen-browser.packages.\${pkgs.stdenv.hostPlatform.system}.default";
-    description = "Paquet Zen Browser (flake youwen5/zen-browser-flake).";
+    description = "Zen Browser package (youwen5/zen-browser-flake).";
   };
 
   config = {
     home.packages = [ config.zen-browser.package ];
 
-    # user.js est relu à chaque démarrage de Zen et prime sur prefs.js.
+    # user.js is re-read on every Zen startup and takes priority over prefs.js.
     home.file.".zen/user.js".text = ''
       user_pref("browser.tabs.allow_transparent_browser", true);
       user_pref("zen.widget.linux.transparency", true);
@@ -23,8 +23,8 @@
     '';
 
     home.activation = {
-      # Zen réécrit profiles.ini à l'exécution, donc pas de symlink store :
-      # on régénère idempotent vers ~/.zen (racine profils = ~/.config/zen).
+      # Zen rewrites profiles.ini at runtime, so no store symlink: regenerate
+      # it idempotently pointing at ~/.zen (profile root = ~/.config/zen).
       initZenProfile = lib.hm.dag.entryBefore [ "migrateZenProfile" ] ''
         profile="${config.home.homeDirectory}/.zen"
         ini="${config.home.homeDirectory}/.config/zen/profiles.ini"
@@ -44,7 +44,7 @@ EOF
         fi
       '';
 
-      # Migration one-shot : ancien profil auto (hash) -> ~/.zen.
+      # One-shot migration: old auto-generated profile (hash) -> ~/.zen.
       migrateZenProfile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         marker="$HOME/.zen/.zen-migrated"
         if [ ! -f "$marker" ]; then

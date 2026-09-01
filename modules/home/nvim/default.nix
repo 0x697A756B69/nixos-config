@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 {
-  # theme.lua charge ce chemin en dur via dofile().
+  # theme.lua hardcodes this path via dofile().
   xdg.configFile."nvim/lua/colors-matugen.lua".source =
     "${config.styling.palette}/colors-matugen.lua";
   xdg.configFile."nvim/lua/theme.lua".source = ./theme.lua;
@@ -9,28 +9,28 @@
   programs.nixvim = {
     enable = true;
 
-    # ---------- Apparence ----------
-    # Pas de colorscheme dédié : theme.lua applique la palette matugen par-dessus.
+    # ---------- Appearance ----------
+    # No dedicated colorscheme: theme.lua applies the matugen palette on top.
     plugins.web-devicons.enable = true;
     plugins.bufferline.enable = true;
     plugins.lualine.enable = true;
 
-    # ---------- Arbre syntaxique (treesitter, API native) ----------
+    # ---------- Syntax tree (treesitter) ----------
     plugins.treesitter.enable = true;
     plugins.treesitter.highlight.enable = true;
     plugins.treesitter.indent.enable = true;
 
-    # ---------- Exploration de fichiers (neo-tree) ----------
+    # ---------- File explorer (neo-tree) ----------
     plugins.neo-tree.enable = true;
     plugins.neo-tree.settings.window.position = "left";
     plugins.neo-tree.settings.filesystem.follow_current_file.enabled = true;
     plugins.neo-tree.settings.source_selector.winbar = true;
     plugins.neo-tree.settings.source_selector.statusline = false;
 
-    # ---------- Recherche floue (fzf-lua) ----------
+    # ---------- Fuzzy finder (fzf-lua) ----------
     plugins.fzf-lua.enable = true;
 
-    # ---------- Autocomplétion (nvim-cmp -> plugins.cmp) ---------
+    # ---------- Autocomplete (nvim-cmp -> plugins.cmp) ---------
     plugins.cmp.enable = true;
     plugins.cmp.settings.sources = [
       { name = "nvim_lsp"; }
@@ -58,11 +58,11 @@
     plugins.cmp_luasnip.enable = true;
     plugins.lspkind.enable = true;
 
-    # ---------- Formatage à la sauvegarde (conform-nvim) ----------
+    # ---------- Format on save (conform-nvim) ----------
     plugins.conform-nvim.enable = true;
     plugins.conform-nvim.settings.formatters_by_ft.nix = [ "nixpkgs-fmt" ];
 
-    # ---------- LSP (nixd pour Nix) ----------
+    # ---------- LSP (nixd for Nix) ----------
     plugins.lsp.enable = true;
     plugins.lsp.servers.nixd.enable = true;
     plugins.lsp.servers.nixd.package = pkgs.nixd;
@@ -86,7 +86,7 @@
     plugins.comment.enable = true;
     plugins.cord.enable = true;
 
-    # ---------- Raccourcis ----------
+    # ---------- Keymaps ----------
     keymaps = [
       {
         mode = "n";

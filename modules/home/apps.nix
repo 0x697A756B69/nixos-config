@@ -1,10 +1,8 @@
-# Applications et outils généraux, sans module dédié (une ligne ou presque
-# chacun) : client Discord, polices, utilitaires réseau/bluetooth/debug.
+# General apps and tools without a dedicated module.
 { config, pkgs, ... }:
 
 {
-  # Vesktop : client Discord (Vencord intégré), meilleur support Linux pour les
-  # appels/streams. Installation propre sans theming ni transparence custom.
+  # Vesktop: Discord client with Vencord built in, better Linux support for calls/streams.
   programs.vesktop.enable = true;
 
   programs.home-manager.enable = true;

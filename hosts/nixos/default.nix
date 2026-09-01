@@ -1,5 +1,5 @@
-# Hôte "nixos" : tout ce qui est réellement spécifique à cette machine
-# (matériel, hostname, autologin). Le reste vit dans modules/system/*.
+# Host "nixos": machine-specific bits only (hardware, hostname, autologin).
+# Everything else lives in modules/system/*.
 { config, pkgs, inputs, ... }:
 
 {
@@ -24,10 +24,10 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   services.udev.extraRules = ''
-  # Dongle USB custom (VID:PID 3554:f508) — accès utilisateur
+  # Custom USB dongle (VID:PID 3554:f508): user access
   SUBSYSTEMS=="usb", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="f508", MODE="0666", GROUP="users"
 
-  # Même device — désactive l'autosuspend de façon persistante
+  # Same device: disable autosuspend persistently
   SUBSYSTEM=="usb", ATTR{idVendor}=="3554", ATTR{idProduct}=="f508", TEST=="power/control", ATTR{power/control}="on"
 '';
   # Use latest kernel.

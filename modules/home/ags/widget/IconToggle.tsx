@@ -1,6 +1,6 @@
 import { Binding } from "astal"
 
-// Bouton-icône à la place du <switch> GTK par défaut (non thémable).
+// Icon button in place of the default (non-themable) GTK <switch>.
 export default function IconToggle({ active, onIcon, offIcon, onToggle, tooltip }: {
     active: Binding<boolean>
     onIcon: string

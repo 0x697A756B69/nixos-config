@@ -4,7 +4,7 @@ import WifiTab from "./WifiTab"
 import BluetoothTab from "./BluetoothTab"
 import DisplayTab, { refreshOnOpen as refreshDisplayTab } from "./DisplayTab"
 
-// Gtk.ScrolledWindow n'est pas pré-emballé par astal/gtk4, d'où astalify().
+// Gtk.ScrolledWindow isn't pre-wrapped by astal/gtk4, hence astalify().
 const ScrolledWindow = astalify<Gtk.ScrolledWindow, Gtk.ScrolledWindow.ConstructorProps>(Gtk.ScrolledWindow)
 
 export type TabId = "wifi" | "bluetooth" | "display"
@@ -17,11 +17,11 @@ const TABS: { id: TabId; label: string }[] = [
 
 const activeTab = Variable<TabId>("wifi")
 
-// Rempli par `setup` à la construction, pour piloter `visible` depuis app.ts.
+// Filled by `setup` at construction, so app.ts can drive `visible`.
 let win: Astal.Window | null = null
 
-// Point d'entrée unique pour changer d'onglet (sidebar ou requestHandler) :
-// garantit le refresh HDR à chaque passage sur l'onglet Écran.
+// Single entry point for tab switching (sidebar or requestHandler):
+// guarantees the HDR refresh on every switch to the Display tab.
 function switchTo(tab: TabId) {
     activeTab.set(tab)
     if (tab === "display") refreshDisplayTab()
@@ -32,12 +32,12 @@ export function showTab(tab: TabId) {
     if (win) win.visible = true
 }
 
-// Toggle générique (icône réglages waybar) : garde l'onglet actif.
+// Generic toggle (waybar settings icon): keeps the current tab.
 export function openSettings() {
     if (win) win.visible = !win.visible
 }
 
-// Tuile carrée remplissant toute la colonne (140x140).
+// Square tile filling the whole column (140x140).
 function SidebarButton({ id, label }: { id: TabId; label: string }) {
     return <button
         cssClasses={bind(activeTab).as(t => t === id ? ["sidebar-btn", "active"] : ["sidebar-btn"])}
@@ -50,8 +50,8 @@ function SidebarButton({ id, label }: { id: TabId; label: string }) {
     </button>
 }
 
-// Un <box> par onglet, visibilité conditionnée sur l'onglet actif.
-// ScrolledWindow : la fenêtre a une taille fixe, le contenu doit défiler.
+// One <box> per tab, visibility gated on the active tab.
+// ScrolledWindow: the window has a fixed size, content must scroll instead.
 function TabContainer(id: TabId, child: Gtk.Widget) {
     return <box visible={bind(activeTab).as(t => t === id)} cssClasses={["tab-content"]} vexpand>
         <ScrolledWindow vexpand hscrollbarPolicy={Gtk.PolicyType.NEVER} vscrollbarPolicy={Gtk.PolicyType.AUTOMATIC}>
@@ -68,7 +68,7 @@ export default function SettingsWindow() {
         cssClasses={["Panel"]}
         exclusivity={Astal.Exclusivity.NORMAL}
         keymode={Astal.Keymode.ON_DEMAND}
-        // Pas d'anchor : la surface layer-shell se centre par défaut.
+        // No anchor: the layer-shell surface centers itself by default.
         application={App}
         setup={self => { win = self }}
     >
