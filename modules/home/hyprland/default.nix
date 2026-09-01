@@ -46,7 +46,7 @@ in
       # sur le premier prototype, laissait une fenêtre fantôme).
       layer_rule = {
         match.namespace = "^(settings-window)$";
-        animation = "slide";
+        animation = "pop";
         # Thème "app" translucide (voir modules/home/ags, .panel-box en
         # base_glass) : sans ce blur, le fond translucide ne floute rien
         # derrière lui, contrairement à Zen/kitty qui en bénéficient déjà
