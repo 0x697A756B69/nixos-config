@@ -7,8 +7,10 @@
     rofi-bluetooth
   ];
 
+  # Symlink, not a store copy: rofi-colors.rasi is regenerated at runtime
+  # by theme-apply (see modules/home/theming/matugen), not at Nix build time.
   xdg.configFile."rofi/rofi-colors.rasi".source =
-    "${config.styling.palette}/rofi-colors.rasi";
+    config.lib.file.mkOutOfStoreSymlink "${config.styling.paletteDir}/rofi-colors.rasi";
   xdg.configFile."rofi/config-layout.rasi".source = ./config-layout.rasi;
   xdg.configFile."rofi/power-layout.rasi".source = ./power-layout.rasi;
   xdg.configFile."rofi/capture-layout.rasi".source = ./capture-layout.rasi;

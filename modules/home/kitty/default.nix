@@ -6,7 +6,7 @@
     # 0 = never confirm on close.
     settings."confirm_os_window_close" = "0";
     extraConfig = ''
-      include ${config.styling.palette}/kitty.conf
+      include ${config.styling.paletteDir}/kitty.conf
     '';
   };
 }

@@ -1,9 +1,10 @@
 { config, pkgs, ... }:
 
 {
-  # theme.lua hardcodes this path via dofile().
+  # theme.lua hardcodes this path via dofile(). Symlink, not a store copy:
+  # regenerated at runtime by theme-apply (see modules/home/theming/matugen).
   xdg.configFile."nvim/lua/colors-matugen.lua".source =
-    "${config.styling.palette}/colors-matugen.lua";
+    config.lib.file.mkOutOfStoreSymlink "${config.styling.paletteDir}/colors-matugen.lua";
   xdg.configFile."nvim/lua/theme.lua".source = ./theme.lua;
 
   programs.nixvim = {

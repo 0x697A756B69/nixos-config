@@ -155,7 +155,7 @@ pkill -RTMIN+1 waybar''}";
     };
 
     style = ''
-      @import "${config.styling.palette}/colors.css";
+      @import "${config.styling.paletteDir}/colors.css";
 
       * {
         font-family: "JetBrains Mono Nerd Font";

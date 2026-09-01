@@ -1,22 +1,25 @@
-
-{ config, pkgs, lib, self, ... }:
-{
-  options.styling.palette = lib.mkOption {
-    type = lib.types.package;
-    description = ''
-      Material You palette derived from the wallpaper by matugen at build time.
-      colors.css, colors.json, colors-matugen.lua, rofi-colors.rasi, kitty.conf, zenChrome.css.
-    '';
-  };
-  config.styling.palette = pkgs.runCommand "desktop-palette" {
-    nativeBuildInputs = [ pkgs.matugen pkgs.jq pkgs.ffmpeg ];
-  } ''
+{ config, pkgs, lib, ... }:
+let
+  # Same ffmpeg+matugen+jq pipeline that used to run once at Nix build time
+  # against a hardcoded wallpaper — now a runtime script taking any image or
+  # video path, so the wallpaper switcher (Quickshell settings app) can
+  # re-theme without a rebuild. ffmpeg's `-frames:v 1` grabs a single frame
+  # whether the input is a video or already a still image, so no branching
+  # on file type is needed.
+  themeApply = pkgs.writeShellScriptBin "theme-apply" ''
     set -euo pipefail
-    mkdir -p $out
-    ffmpeg -y -i ${self}/modules/home/theming/wallpapers/wallpaper_upscaled_2k.mp4 -vf 'scale=512:288' -frames:v 1 frame.png -loglevel error
-    matugen image frame.png -m dark --json hex --source-color-index 0 </dev/null > palette.json
-    # CSS (waybar + wofi)
-    jq -r '
+    input="$1"
+    outdir="$HOME/.cache/theming/current"
+    mkdir -p "$outdir"
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
+
+    ${pkgs.ffmpeg}/bin/ffmpeg -y -i "$input" -vf 'scale=512:288' -frames:v 1 "$tmp/frame.png" -loglevel error
+    ${pkgs.matugen}/bin/matugen image "$tmp/frame.png" -m dark --json hex --source-color-index 0 </dev/null > "$tmp/palette.json"
+    palette="$tmp/palette.json"
+
+    # CSS (waybar + walker)
+    ${pkgs.jq}/bin/jq -r '
       "@define-color base      " + .colors.surface.dark.color         + ";",
       "@define-color base_alt  " + .colors.surface_variant.dark.color + ";",
       "@define-color text      " + .colors.on_surface.dark.color      + ";",
@@ -27,19 +30,20 @@
       "@define-color error     " + .colors.error.dark.color           + ";",
       "@define-color border    " + .colors.surface_variant.dark.color + ";",
       "@define-color warning   " + .colors.tertiary.dark.color        + ";"
-    ' palette.json > $out/colors.css
+    ' "$palette" > "$outdir/colors.css"
     # Translucent variant of the surface color ("frosted glass")
-    rgb=$(jq -r '.colors.surface.dark.color' palette.json | tr -d '#')
+    rgb=$(${pkgs.jq}/bin/jq -r '.colors.surface.dark.color' "$palette" | tr -d '#')
     hard=$((0x$(printf '%s' "$rgb" | cut -c1-2)))
     soft=$((0x$(printf '%s' "$rgb" | cut -c3-4)))
     deep=$((0x$(printf '%s' "$rgb" | cut -c5-6)))
-    printf '@define-color base_glass rgba(%s, %s, %s, 0.45);\n' "$hard" "$soft" "$deep" >> $out/colors.css
-    grep -q '@define-color' $out/colors.css
+    printf '@define-color base_glass rgba(%s, %s, %s, 0.45);\n' "$hard" "$soft" "$deep" >> "$outdir/colors.css"
+    grep -q '@define-color' "$outdir/colors.css"
+
     # Flat JSON, same roles as colors.css, for QML (Quickshell settings app).
     # panel: matugen's own "surface container high" role (Material 3 elevated
     # surface token) rather than surface+alpha — a nearly-opaque card still
     # reads as on-theme instead of a flat dark blend. #f2 prefix = ~0.95 alpha.
-    jq -n --slurpfile p palette.json --argjson gr "$hard" --argjson gg "$soft" --argjson gb "$deep" '
+    ${pkgs.jq}/bin/jq -n --slurpfile p "$palette" --argjson gr "$hard" --argjson gg "$soft" --argjson gb "$deep" '
       $p[0].colors as $c | {
         base:      $c.surface.dark.color,
         base_alt:  $c.surface_variant.dark.color,
@@ -54,10 +58,11 @@
         base_glass: { r: $gr, g: $gg, b: $gb, a: 0.45 },
         panel: ("#f2" + ($c.surface_container_high.dark.color | ltrimstr("#")))
       }
-    ' > $out/colors.json
-    grep -q '"accent"' $out/colors.json
+    ' > "$outdir/colors.json"
+    grep -q '"accent"' "$outdir/colors.json"
+
     # Lua table loaded by theme.lua (nvim)
-    jq -r '
+    ${pkgs.jq}/bin/jq -r '
       "return {",
       "  foreground = \"" + .colors.on_surface.dark.color         + "\",",
       "  comment    = \"" + .colors.on_surface_variant.dark.color + "\",",
@@ -70,10 +75,11 @@
       "  secondary  = \"" + .colors.secondary.dark.color          + "\",",
       "  tertiary   = \"" + .colors.tertiary.dark.color           + "\",",
       "}"
-    ' palette.json > $out/colors-matugen.lua
-    grep -q '^return {' $out/colors-matugen.lua
+    ' "$palette" > "$outdir/colors-matugen.lua"
+    grep -q '^return {' "$outdir/colors-matugen.lua"
+
     # Rofi: .rasi syntax, no @define-color
-    jq -r '
+    ${pkgs.jq}/bin/jq -r '
       "* {",
       "  base:      " + .colors.surface.dark.color         + ";",
       "  base-alt:  " + .colors.surface_variant.dark.color + ";",
@@ -85,25 +91,26 @@
       "  error:     " + .colors.error.dark.color           + ";",
       "  radius:    16px;",
       "}"
-    ' palette.json > $out/rofi-colors.rasi
-    erb=$(jq -r '.colors.error.dark.color' palette.json | tr -d '#')
+    ' "$palette" > "$outdir/rofi-colors.rasi"
+    erb=$(${pkgs.jq}/bin/jq -r '.colors.error.dark.color' "$palette" | tr -d '#')
     er=$((0x$(printf '%s' "$erb" | cut -c1-2)))
     eg=$((0x$(printf '%s' "$erb" | cut -c3-4)))
     eb=$((0x$(printf '%s' "$erb" | cut -c5-6)))
-    sed -i "s/^}/  error-soft: rgba($er, $eg, $eb, 0.18);\n}/" $out/rofi-colors.rasi
-    grep -q 'error-soft' $out/rofi-colors.rasi
+    sed -i "s/^}/  error-soft: rgba($er, $eg, $eb, 0.18);\n}/" "$outdir/rofi-colors.rasi"
+    grep -q 'error-soft' "$outdir/rofi-colors.rasi"
+
     # Kitty: background/foreground/cursor + 16 ANSI colors
-    jq -r '
+    ${pkgs.jq}/bin/jq -r '
       "background            " + .colors.surface_variant.dark.color,
       "foreground            " + .colors.on_surface.dark.color,
       "cursor                " + .colors.primary.dark.color,
       "cursor_text_color     " + .colors.on_primary.dark.color,
       "selection_background  " + .colors.primary.dark.color,
       "selection_foreground  " + .colors.on_primary.dark.color
-    ' palette.json > $out/kitty.conf
-    printf 'background_opacity 0.40\n' >> $out/kitty.conf
+    ' "$palette" > "$outdir/kitty.conf"
+    printf 'background_opacity 0.40\n' >> "$outdir/kitty.conf"
     # Luminance clamp: keeps colors readable on a translucent background.
-    jq -r '
+    ${pkgs.jq}/bin/jq -r '
       ("0123456789abcdef" as $hex
        | def dv(c): ($hex|index(c)) as $i | if $i == null then error("hex digit") else $i end;
          def h2dec(s): dv(s[0:1])*16 + dv(s[1:2]);
@@ -122,8 +129,9 @@
             | (($g*$f) | floor) as $ng
             | (($b*$f) | floor) as $nb
             | "color\($k) #\(hx($nr))\(hx($ng))\(hx($nb))"))
-    ' palette.json >> $out/kitty.conf
-    grep -q '^color15 ' $out/kitty.conf
+    ' "$palette" >> "$outdir/kitty.conf"
+    grep -q '^color15 ' "$outdir/kitty.conf"
+
     # Zen Browser: ''${var} escaped to stay a bash literal, not interpolated by Nix.
     rgba() {
       local h a r g b
@@ -134,13 +142,13 @@
       b=$(printf '%d' "$((0x$(printf '%s' "$h" | cut -c5-6)))")
       printf 'rgba(%s, %s, %s, %s)' "$r" "$g" "$b" "$a"
     }
-    sf=$(jq -r '.colors.surface.dark.color' palette.json)
-    sfv=$(jq -r '.colors.surface_variant.dark.color' palette.json)
-    onsf=$(jq -r '.colors.on_surface.dark.color' palette.json)
-    prim=$(jq -r '.colors.primary.dark.color' palette.json)
-    tert=$(jq -r '.colors.tertiary.dark.color' palette.json)
-    outl=$(jq -r '.colors.outline.dark.color' palette.json)
-    cat > $out/zenChrome.css <<EOF
+    sf=$(${pkgs.jq}/bin/jq -r '.colors.surface.dark.color' "$palette")
+    sfv=$(${pkgs.jq}/bin/jq -r '.colors.surface_variant.dark.color' "$palette")
+    onsf=$(${pkgs.jq}/bin/jq -r '.colors.on_surface.dark.color' "$palette")
+    prim=$(${pkgs.jq}/bin/jq -r '.colors.primary.dark.color' "$palette")
+    tert=$(${pkgs.jq}/bin/jq -r '.colors.tertiary.dark.color' "$palette")
+    outl=$(${pkgs.jq}/bin/jq -r '.colors.outline.dark.color' "$palette")
+    cat > "$outdir/zenChrome.css" <<EOF
 :root {
   --zen-main-browser-background: $(rgba "$sfv" 0.45);
   --zen-main-browser-background-toolbar: var(--zen-main-browser-background);
@@ -161,9 +169,10 @@
   --in-content-page-color: ''${onsf};
 }
 EOF
-    grep -q -- '--zen-colors-primary' $out/zenChrome.css
+    grep -q -- '--zen-colors-primary' "$outdir/zenChrome.css"
+
     # Vesktop (Vencord)
-    cat > $out/vesktop.theme.css <<EOF
+    cat > "$outdir/vesktop.theme.css" <<EOF
 /**
  * @name Matugen Wallpaper Theme
  * @version 1.0.0
@@ -193,7 +202,27 @@ EOF
   --scrollbar-auto-track: ''${sf};
 }
 EOF
-    grep -q -- '--background-primary' $out/vesktop.theme.css
-  '';
-}
+    grep -q -- '--background-primary' "$outdir/vesktop.theme.css"
 
+    # Propagate to already-running apps that don't watch the palette dir
+    # themselves (Quickshell/walker/rofi do, by reading fresh at each launch
+    # or via FileView watchChanges — waybar needs an explicit kick).
+    ${pkgs.procps}/bin/pkill waybar 2>/dev/null || true
+    ${pkgs.waybar}/bin/waybar >/dev/null 2>&1 & disown || true
+  '';
+in
+{
+  options.styling.paletteDir = lib.mkOption {
+    type = lib.types.str;
+    default = "${config.home.homeDirectory}/.cache/theming/current";
+    description = ''
+      Runtime directory holding the current matugen palette (colors.css,
+      colors.json, colors-matugen.lua, rofi-colors.rasi, kitty.conf,
+      zenChrome.css, vesktop.theme.css), regenerated by `theme-apply` —
+      no longer a Nix store package, so wallpaper switching (see
+      modules/home/quickshell) doesn't need a rebuild to re-theme.
+    '';
+  };
+
+  config.home.packages = [ themeApply ];
+}

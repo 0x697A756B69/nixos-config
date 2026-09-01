@@ -18,8 +18,10 @@
       user_pref("zen.widget.linux.transparency", true);
     '';
 
+    # @import (not readFile): zenChrome.css is regenerated at runtime by
+    # theme-apply, readFile would freeze its content at Nix eval time.
     home.file.".zen/chrome/userChrome.css".text = ''
-      ${builtins.readFile "${config.styling.palette}/zenChrome.css"}
+      @import url("file://${config.styling.paletteDir}/zenChrome.css");
     '';
 
     home.activation = {
