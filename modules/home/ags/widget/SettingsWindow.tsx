@@ -41,12 +41,17 @@ export function showTab(tab: TabId) {
     if (win) win.visible = true
 }
 
+// Tuile carrée (140x140, largeur = hauteur = largeur de la sidebar) plutôt
+// qu'une ligne de texte — remplit toute la colonne.
 function SidebarButton({ id, label }: { id: TabId; label: string }) {
     return <button
         cssClasses={bind(activeTab).as(t => t === id ? ["sidebar-btn", "active"] : ["sidebar-btn"])}
         onClicked={() => switchTo(id)}
+        widthRequest={140}
+        heightRequest={140}
+        hexpand
     >
-        <label label={label} halign={Gtk.Align.START} hexpand />
+        <label label={label} halign={Gtk.Align.CENTER} valign={Gtk.Align.CENTER} hexpand vexpand />
     </button>
 }
 
@@ -81,7 +86,7 @@ export default function SettingsWindow() {
         setup={self => { win = self }}
     >
         <box cssClasses={["panel-box"]} widthRequest={640} heightRequest={640}>
-            <box vertical cssClasses={["sidebar"]}>
+            <box vertical cssClasses={["sidebar"]} widthRequest={140} spacing={8}>
                 {TABS.map(SidebarButton)}
                 <box vexpand />
                 <button cssClasses={["close-btn"]} onClicked={() => { if (win) win.visible = false }}>

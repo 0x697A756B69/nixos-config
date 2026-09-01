@@ -33,32 +33,36 @@ let
       font-family: "JetBrains Mono Nerd Font";
     }
 
-    /* La fenêtre reste transparente : le fond visuel opaque + les coins
-       arrondis sont portés par .panel-box. Fenêtre centrée façon
+    /* La fenêtre reste transparente : le fond visuel translucide + les
+       coins arrondis sont portés par .panel-box. Fenêtre centrée façon
        sélecteur d'app (voir modules/home/rofi/config-layout.rasi, même
-       rayon 20px) — coins arrondis des 4 côtés, plus d'"extension" de
-       l'encoche waybar depuis qu'elle ne s'y ancre plus. */
+       rayon 20px), et thème "app" (translucide + flou, base_glass) plutôt
+       que le thème "encoche" (opaque, base) maintenant qu'elle flotte au
+       centre au lieu de descendre de la waybar — même famille que kitty/
+       zen (voir le commentaire dans modules/home/waybar sur cette
+       distinction opaque/translucide). Le flou réel derrière vient du
+       layer_rule Hyprland (blur = true, voir modules/home/hyprland). */
     window.Panel {
       background: transparent;
     }
 
     .panel-box {
-      background: @base;
+      background: @base_glass;
       color: @text;
       border-radius: 20px;
     }
 
     .sidebar {
-      padding: 12px 8px;
+      padding: 8px;
       min-width: 140px;
       border-radius: 20px 0 0 20px;
     }
     .sidebar-btn {
-      padding: 8px 10px;
-      margin-bottom: 2px;
-      border-radius: 8px;
+      border-radius: 12px;
       color: @text;
       background: transparent;
+      font-size: 14px;
+      font-weight: bold;
     }
     .sidebar-btn:hover {
       background: @base_alt;

@@ -47,6 +47,14 @@ in
       layer_rule = {
         match.namespace = "^(settings-window)$";
         animation = "slide";
+        # Thème "app" translucide (voir modules/home/ags, .panel-box en
+        # base_glass) : sans ce blur, le fond translucide ne floute rien
+        # derrière lui, contrairement à Zen/kitty qui en bénéficient déjà
+        # via decoration.blur.xray global (les layer-shell n'en héritent
+        # pas automatiquement, d'où ce layer_rule dédié — champ confirmé
+        # réel via la doc Hyprland, cf. exemple hl.layer_rule({ blur = true }
+        # trouvé pendant la conception initiale du dropdown).
+        blur = true;
       };
 
       config = {
