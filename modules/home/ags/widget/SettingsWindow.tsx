@@ -42,11 +42,12 @@ export function showTab(tab: TabId) {
 }
 
 // Ouverture générique (icône réglages waybar, voir modules/home/waybar
-// custom/settings) : montre l'app sur l'onglet déjà actif, sans forcer un
-// onglet précis comme showTab (utilisé par les clics droits wifi/bluetooth
-// qui, eux, savent sur quel onglet ils veulent atterrir).
+// custom/settings) : bascule l'app sur l'onglet déjà actif (toggle), sans
+// forcer un onglet précis comme showTab (utilisé par les clics droits
+// wifi/bluetooth qui, eux, savent sur quel onglet ils veulent atterrir et
+// ne doivent jamais fermer par erreur).
 export function openSettings() {
-    if (win) win.visible = true
+    if (win) win.visible = !win.visible
 }
 
 // Tuile carrée (140x140, largeur = hauteur = largeur de la sidebar) plutôt
