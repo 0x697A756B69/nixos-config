@@ -19,6 +19,11 @@ let
         property alias c: colorsAdapter
         readonly property color baseGlassColor: Qt.rgba(
             c.base_glass.r / 255, c.base_glass.g / 255, c.base_glass.b / 255, c.base_glass.a)
+        // Same tint, more opaque: used for the card/rail backgrounds so
+        // page content stays legible without blur behind them. baseGlassColor
+        // itself stays light — it's also used for hover/active tints.
+        readonly property color panelColor: Qt.rgba(
+            c.base_glass.r / 255, c.base_glass.g / 255, c.base_glass.b / 255, 0.88)
 
         FileView {
             path: "${config.styling.palette}/colors.json"

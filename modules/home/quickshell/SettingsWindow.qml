@@ -59,7 +59,7 @@ PanelWindow {
         width: 640
         height: 640
         radius: 22
-        color: Colors.baseGlassColor
+        color: Colors.panelColor
 
         property bool userMoved: false
         anchors.centerIn: userMoved ? undefined : parent
@@ -99,7 +99,7 @@ PanelWindow {
                 Layout.fillHeight: true
                 Layout.preferredWidth: 190
                 radius: 17
-                color: Colors.baseGlassColor
+                color: Colors.panelColor
 
                 ColumnLayout {
                     anchors.fill: parent
