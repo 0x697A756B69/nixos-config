@@ -39,8 +39,12 @@
           tooltip = false;
         };
         "custom/settings" = {
-          format = "󰀘";
-          on-click = "rofi -show drun";
+          # Ouvre l'app de réglages (voir modules/home/ags) sur l'onglet
+          # déjà actif. Le lancement d'apps (ex-rofi drun ici) reste
+          # accessible via SUPER+R (wofi --show drun, voir
+          # modules/home/hyprland/binds.nix).
+          format = "󰒓";
+          on-click = "ags request open";
           tooltip = false;
         };
         "custom/prev" = {

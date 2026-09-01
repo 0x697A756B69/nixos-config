@@ -1,6 +1,6 @@
 import { App } from "astal/gtk4"
 import style from "./style.css"
-import SettingsWindow, { showTab } from "./widget/SettingsWindow"
+import SettingsWindow, { showTab, openSettings } from "./widget/SettingsWindow"
 
 App.start({
     css: style,
@@ -19,6 +19,12 @@ App.start({
             case "open:bluetooth":
             case "open:display":
                 showTab(request.split(":")[1] as "wifi" | "bluetooth" | "display")
+                res("ok")
+                break
+            case "open":
+                // Icône réglages générique (voir modules/home/waybar
+                // custom/settings) : garde l'onglet déjà actif.
+                openSettings()
                 res("ok")
                 break
             default:
