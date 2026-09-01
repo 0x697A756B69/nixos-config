@@ -7,12 +7,7 @@ App.start({
     main() {
         SettingsWindow()
     },
-    // Clic droit sur wifi/bluetooth (voir modules/home/waybar) : "ags
-    // request open:<tab>" affiche la fenêtre (toujours mappée) sur l'onglet
-    // demandé, plutôt que "ags toggle" qui basculerait juste le mapping —
-    // ici on veut *toujours* montrer le bon onglet, jamais fermer par erreur
-    // si on clique sur un autre module pendant que la fenêtre est déjà
-    // ouverte sur un autre onglet.
+    // open:<tab> force l'onglet et affiche la fenêtre ; open garde l'onglet actif et toggle.
     requestHandler(request, res) {
         switch (request) {
             case "open:wifi":
@@ -22,8 +17,6 @@ App.start({
                 res("ok")
                 break
             case "open":
-                // Icône réglages générique (voir modules/home/waybar
-                // custom/settings) : garde l'onglet déjà actif.
                 openSettings()
                 res("ok")
                 break

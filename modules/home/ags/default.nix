@@ -1,26 +1,12 @@
-# App de réglages unifiée (Wi-Fi / Bluetooth / Écran), fenêtre unique à
-# onglets ouverte via clic droit sur les modules waybar correspondants (voir
-# modules/home/waybar). AGS v2 (CLI de scaffolding) + Astal (bibliothèques
-# GObject/DBus événementielles) : AstalNetwork/AstalBluetooth pour le
-# wifi/bluetooth, AstalHyprland pour l'écran. Reconstruction d'un premier
-# prototype (dropdown wifi/bluetooth seul) retiré ensuite ; ce module reprend
-# tel quel tout le packaging qui avait été débogué en conditions réelles :
+# App de réglages unifiée (Wi-Fi / Bluetooth / Écran). AGS v2 + Astal
+# (AstalNetwork/AstalBluetooth/AstalHyprland). Ouverte via clic droit sur
+# les modules waybar correspondants (voir modules/home/waybar).
 #
-# - Pas de `ags bundle` (comportement de sortie non vérifiable sans session
-#   graphique) : la source TS/TSX est copiée telle quelle dans le store et
-#   lancée via `ags run app.ts`, qui résout "astal" via un chemin de store
-#   absolu dans package.json (généré ci-dessous) — aucun accès réseau ni au
-#   build ni au lancement.
-# - Couleurs matugen INLINÉES dans le CSS (pas de @import) : vérifié en
-#   conditions réelles (capture d'écran + échantillonnage de pixel) que le
-#   CSS GTK4 d'Astal ne propage PAS les @define-color d'un fichier @import
-#   dans la feuille qui l'importe. Même technique que modules/home/zen.nix
-#   (builtins.readFile).
-# - `ags run` seul échoue sans GI_TYPELIB_PATH (le binaire, buildGoModule,
-#   ne le pose pas) : sans lui, gjs échoue à "Requiring Astal/AstalNetwork"
-#   (Gdk, Graphene, NM introuvables). Avec, l'app importe tout et construit
-#   les fenêtres ; seul reste l'échec attendu à l'ouverture du display en
-#   environnement headless.
+# - Pas de `ags bundle` : source TS/TSX copiée telle quelle dans le store,
+#   lancée via `ags run app.ts` (package.json pointe "astal" vers le store).
+# - Couleurs matugen inlinées dans le CSS (readFile), pas de @import : le
+#   CSS GTK4 d'Astal ne propage pas les @define-color d'un fichier importé.
+# - GI_TYPELIB_PATH doit être posé explicitement (le paquet ags ne le fait pas).
 { config, pkgs, lib, ... }:
 
 let
@@ -33,15 +19,8 @@ let
       font-family: "JetBrains Mono Nerd Font";
     }
 
-    /* La fenêtre reste transparente : le fond visuel translucide + les
-       coins arrondis sont portés par .panel-box. Fenêtre centrée façon
-       sélecteur d'app (voir modules/home/rofi/config-layout.rasi, même
-       rayon 20px), et thème "app" (translucide + flou, base_glass) plutôt
-       que le thème "encoche" (opaque, base) maintenant qu'elle flotte au
-       centre au lieu de descendre de la waybar — même famille que kitty/
-       zen (voir le commentaire dans modules/home/waybar sur cette
-       distinction opaque/translucide). Le flou réel derrière vient du
-       layer_rule Hyprland (blur = true, voir modules/home/hyprland). */
+    /* Fenêtre transparente : fond translucide + coins arrondis portés par
+       .panel-box. Flou réel via layer_rule Hyprland (modules/home/hyprland). */
     window.Panel {
       background: transparent;
     }
@@ -104,9 +83,7 @@ let
       background: transparent;
     }
 
-    /* Remplace les <switch> GTK (bleu Adwaita, non thémable) : bouton-icône
-       (voir widget/IconToggle.tsx) teinté à l'accent quand actif, sinon
-       glyphe neutre sur fond transparent — même famille que .sidebar-btn. */
+    /* Bouton-icône (widget/IconToggle.tsx) à la place du <switch> GTK. */
     .icon-toggle {
       padding: 6px 10px;
       border-radius: 10px;
@@ -152,9 +129,7 @@ let
     dependencies.astal = "${astalGjs}/share/astal/gjs";
   });
 
-  # Arborescence source assemblée (app.ts + widget/*.tsx statiques du dépôt,
-  # style.css/package.json générés) : c'est ce répertoire qu'`ags run`
-  # exécute directement.
+  # Répertoire exécuté directement par `ags run`.
   agsShellSrc = pkgs.runCommand "ags-shell-src" { } ''
     mkdir -p $out/widget
     cp ${./app.ts} $out/app.ts

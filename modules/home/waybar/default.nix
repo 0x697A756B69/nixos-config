@@ -39,10 +39,7 @@
           tooltip = false;
         };
         "custom/settings" = {
-          # Ouvre l'app de réglages (voir modules/home/ags) sur l'onglet
-          # déjà actif. Le lancement d'apps (ex-rofi drun ici) reste
-          # accessible via SUPER+R (wofi --show drun, voir
-          # modules/home/hyprland/binds.nix).
+          # Ouvre l'app de réglages sur l'onglet déjà actif.
           format = "󰒓";
           on-click = "ags request open";
           tooltip = false;
@@ -120,11 +117,7 @@ pkill -RTMIN+1 waybar''}";
         };
         "custom/bt" = {
           exec = "wb-bt";
-          # Clic gauche : toggle on/off + reconnexion auto aux appareils déjà
-          # appairés (voir wb-bt ci-dessous) — pas de dropdown ici (essayé,
-          # retiré : trop complexe pour ce qui reste un simple interrupteur).
-          # Clic droit : app de réglages (voir modules/home/ags), onglet
-          # Bluetooth — remplace blueman-manager (non thémé).
+          # Clic gauche : toggle + reconnexion auto (wb-bt). Clic droit : onglet Bluetooth.
           on-click = "wb-bt toggle";
           on-click-right = "ags request open:bluetooth";
           signal = 3;
@@ -142,12 +135,7 @@ pkill -RTMIN+1 waybar''}";
           tooltip = false;
         };
         "network#wifi" = {
-          # Wifi : l'icône varie selon la puissance du signal.
-          # Clic gauche : bascule le radio wifi on/off (wb-net toggle,
-          # NetworkManager se reconnecte seul aux réseaux connus une fois
-          # rallumé, pas besoin de reconnexion manuelle comme le bluetooth).
-          # Clic droit : app de réglages (voir modules/home/ags), onglet
-          # Wi-Fi — remplace nm-connection-editor (non thémé).
+          # Clic gauche : toggle radio (wb-net). Clic droit : onglet Wi-Fi.
           interface = "wlp*";
           format-wifi = "{icon}";
           format-icons = [ "󰤯" "󰤟" "󰤢" "󰤨" ];
@@ -157,9 +145,6 @@ pkill -RTMIN+1 waybar''}";
           tooltip = false;
         };
         "network#ethernet" = {
-          # Ethernet : le câble branché supplante l'icône wifi. Pas de
-          # toggle radio pour le filaire (rien à activer/désactiver côté
-          # logiciel) : seul le clic droit ouvre l'app de réglages.
           interface = "en*";
           format-ethernet = "󰈀";
           format-disconnected = "";
@@ -206,17 +191,9 @@ pkill -RTMIN+1 waybar''}";
         border-radius: 0 0 16px 16px;
       }
       #waybar .modules-right {
-        /* Padding asymétrique : extrémité gauche (côté centre de l'écran,
-           juste avant l'icône cpu) resserrée par rapport à la droite (bord
-           d'écran). */
         padding: 0 14px 0 4px;
         background: @base;
         border-radius: 0 0 16px 16px;
-        /* Pas de min-width : elle ne servait qu'à aligner l'ancien dropdown
-           AGS (retiré) sur la largeur de l'encoche. Sans elle, la largeur
-           suit son contenu naturel — les min-width par module ci-dessous
-           garantissent que {usage}%, {percentage}% et {volume}% ne sont
-           jamais tronqués. */
       }
 
       /* --- Gauche : compact, logo NixOS grand et aéré --- */
@@ -252,10 +229,6 @@ pkill -RTMIN+1 waybar''}";
       }
 
       /* --- Droite : compact, palette --- */
-      /* min-width par module (plutôt qu'un espacement disproportionné) :
-         évite toute troncature de {usage}%/{percentage}%/{volume}% quel
-         que soit l'état (bluetooth connecté ou non — ce setup n'a pas de
-         module batterie). */
       #cpu { padding: 0 7px; font-size: 13px; color: @text; min-width: 56px; }
       #memory { padding: 0 7px; font-size: 13px; color: @text; min-width: 56px; }
       #pulseaudio { padding: 0 7px; font-size: 13px; color: @text; min-width: 56px; }
@@ -351,10 +324,8 @@ pkill -RTMIN+1 waybar''}";
 
     (pkgs.writeShellScriptBin "wb-net" ''
       #!/usr/bin/env bash
-      # wb-net — bascule le radio wifi on/off (nmcli). Pas de script d'état :
-      # le module natif waybar "network" surveille déjà NetworkManager via
-      # DBus (événementiel), inutile de dupliquer. NetworkManager reconnecte
-      # seul aux réseaux connus dès que le radio est rallumé.
+      # Bascule le radio wifi (nmcli). Pas de script d'état : le module natif
+      # waybar "network" surveille déjà NetworkManager via DBus.
       if [ "$1" = "toggle" ]; then
         state=$(nmcli radio wifi)
         if [ "$state" = "enabled" ]; then nmcli radio wifi off; else nmcli radio wifi on; fi
@@ -363,13 +334,7 @@ pkill -RTMIN+1 waybar''}";
 
     (pkgs.writeShellScriptBin "wb-bt" ''
       #!/usr/bin/env bash
-      # wb-bt — simple interrupteur bluetooth (pas de dropdown : demande
-      # explicite de simplification, l'UI de connexion wifi/bluetooth à côté
-      # de la waybar a été retirée entièrement).
-      # toggle : bascule power on/off ; à l'allumage, reconnecte tous les
-      # appareils déjà appairés (bluetoothctl devices Paired, format
-      # "Device XX:XX:XX:XX:XX:XX Nom" — connect en arrière-plan, ne bloque
-      # pas waybar si un appareil ne répond pas).
+      # toggle : bascule power, puis reconnecte les appareils déjà appairés en arrière-plan.
       state=$(bluetoothctl show 2>/dev/null | grep -q 'Powered: yes' && echo on || echo off)
       if [ "$1" = "toggle" ]; then
         if [ "$state" = "on" ]; then

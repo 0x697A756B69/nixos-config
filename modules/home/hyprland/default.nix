@@ -26,34 +26,17 @@ in
         scale = 1;
       };
 
-      # Zen Browser : chrome translucide + flou derrière. La transparence est
-      # portée par le CSS (modules/zen.nix); ici on laisse percer le desktop
-      # avec une opacité composite de 95% + flou ciblé (déjà global xray).
+      # Flou géré globalement par decoration.blur.xray ; window_rule n'a pas de champ blur.
       window_rule = {
         match.class = "zen";
         opacity = "0.95 0.95";
-        # Pas de champ `blur` pour une window_rule (réservé aux layer_rule) :
-        # le flou derrière Zen est déjà géré globalement par
-        # decoration.blur.xray = true (voir plus bas).
       };
 
-      # App de réglages (voir modules/home/ags) : animation "slide" au lieu
-      # du fade-in par défaut, pour un effet de déploiement depuis l'encoche
-      # waybar. "slide"/"pop" sont les deux styles valides pour les
-      # layer-shell. La fenêtre reste mappée en permanence (visible piloté
-      # depuis le JS, voir SettingsWindow.tsx) : Hyprland anime chaque
-      # changement de mapping réel, pas de <revealer> GTK (essayé une fois
-      # sur le premier prototype, laissait une fenêtre fantôme).
+      # Fenêtre app de réglages toujours mappée, visibilité pilotée en JS (SettingsWindow.tsx).
+      # blur requis ici : les layer-shell n'héritent pas de blur.xray global.
       layer_rule = {
         match.namespace = "^(settings-window)$";
         animation = "pop";
-        # Thème "app" translucide (voir modules/home/ags, .panel-box en
-        # base_glass) : sans ce blur, le fond translucide ne floute rien
-        # derrière lui, contrairement à Zen/kitty qui en bénéficient déjà
-        # via decoration.blur.xray global (les layer-shell n'en héritent
-        # pas automatiquement, d'où ce layer_rule dédié — champ confirmé
-        # réel via la doc Hyprland, cf. exemple hl.layer_rule({ blur = true }
-        # trouvé pendant la conception initiale du dropdown).
         blur = true;
       };
 

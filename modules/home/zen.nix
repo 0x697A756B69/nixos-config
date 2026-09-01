@@ -12,28 +12,19 @@
   config = {
     home.packages = [ config.zen-browser.package ];
 
-    # Préférences déclaratives (about:config) — user.js est relu à chaque
-    # démarrage de Zen et prime sur prefs.js. Les prefs de transparence sont
-    # vérifiées dans browser/omni.ja de ce build (firefox.js, l. 555 et 1769).
+    # user.js est relu à chaque démarrage de Zen et prime sur prefs.js.
     home.file.".zen/user.js".text = ''
-      // Zen Browser : préférences déclaratives (voir modules/zen.nix)
       user_pref("browser.tabs.allow_transparent_browser", true);
       user_pref("zen.widget.linux.transparency", true);
     '';
 
-    # Thème Material You du wallpaper : contenu de zenChrome.css inliné au
-    # build (même palette matugen que waybar/wofi/kitty, voir theming.nix).
     home.file.".zen/chrome/userChrome.css".text = ''
-      /* Zen Browser : thème Material You du wallpaper (voir modules/theming.nix) */
       ${builtins.readFile "${config.styling.palette}/zenChrome.css"}
     '';
 
     home.activation = {
-      # Zen réécrit profiles.ini à l'exécution => on ne peut pas le symlinker
-      # vers le store (lecture seule). On le (ré)génère de façon idempotente
-      # vers un profil à chemin ABSOLU ~/.zen (le flake pose MOZ_LEGACY_PROFILES=1,
-      # donc la racine des profils est ~/.config/zen). L'ancien profile auto
-      # (aohbx0bt…) reste intact sur le disque.
+      # Zen réécrit profiles.ini à l'exécution, donc pas de symlink store :
+      # on régénère idempotent vers ~/.zen (racine profils = ~/.config/zen).
       initZenProfile = lib.hm.dag.entryBefore [ "migrateZenProfile" ] ''
         profile="${config.home.homeDirectory}/.zen"
         ini="${config.home.homeDirectory}/.config/zen/profiles.ini"
@@ -53,9 +44,7 @@ EOF
         fi
       '';
 
-      # Migration one-shot : ancien profil automatique (hash) -> ~/.zen.
-      # Copie signets/historique/prefs; exclut le CSS de mods périmé et les
-      # artefacts d'exécution (lock, cache, crashreports).
+      # Migration one-shot : ancien profil auto (hash) -> ~/.zen.
       migrateZenProfile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         marker="$HOME/.zen/.zen-migrated"
         if [ ! -f "$marker" ]; then

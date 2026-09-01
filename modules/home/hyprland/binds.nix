@@ -4,11 +4,6 @@
 [
   { _args = [ "${mainMod} + Return" (inline "hl.dsp.exec_cmd(\"${terminal}\")") ]; }
   { _args = [ "${mainMod} + R"      (inline "hl.dsp.exec_cmd(\"${menu}\")") ]; }
-  # SUPER+Q : seul bind lié à la fermeture de fenêtre (pas de killactive brutal
-  # en parallèle). hl.dsp.window.close() envoie une demande de fermeture
-  # normale ; c'est donc bien kitty (confirm_os_window_close, voir
-  # modules/home/kitty/default.nix) qui décide d'afficher ou non une
-  # confirmation, quel que soit le déclencheur (ce bind, bouton, ctrl+shift+w).
   { _args = [ "${mainMod} + Q"      (inline "hl.dsp.window.close()") ]; }
   { _args = [ "${mainMod} + M"      (inline "hl.dsp.exit()") ]; }
   { _args = [ "${mainMod} + V"      (inline "hl.dsp.window.float({ action = \"toggle\" })") ]; }

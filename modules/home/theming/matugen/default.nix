@@ -4,10 +4,8 @@
   options.styling.palette = lib.mkOption {
     type = lib.types.package;
     description = ''
-      Palette Material You dérivée du wallpaper par matugen (au build).
-      Répertoire contenant colors.css (@define-color), colors-matugen.lua
-      (nvim), rofi-colors.rasi, kitty.conf et zenChrome.css.
-      Change de wallpaper => cette palette est régénérée au rebuild.
+      Palette Material You dérivée du wallpaper par matugen au build.
+      colors.css, colors-matugen.lua, rofi-colors.rasi, kitty.conf, zenChrome.css.
     '';
   };
   config.styling.palette = pkgs.runCommand "desktop-palette" {
@@ -17,7 +15,7 @@
     mkdir -p $out
     ffmpeg -y -i ${self}/modules/home/theming/wallpapers/wallpaper_upscaled_2k.mp4 -vf 'scale=512:288' -frames:v 1 frame.png -loglevel error
     matugen image frame.png -m dark --json hex --source-color-index 0 </dev/null > palette.json
-    # --- Rôles Material You -> CSS (waybar + wofi) ---
+    # CSS (waybar + wofi)
     jq -r '
       "@define-color base      " + .colors.surface.dark.color         + ";",
       "@define-color base_alt  " + .colors.surface_variant.dark.color + ";",
@@ -30,17 +28,14 @@
       "@define-color border    " + .colors.surface_variant.dark.color + ";",
       "@define-color warning   " + .colors.tertiary.dark.color        + ";"
     ' palette.json > $out/colors.css
-    # Variante "verre dépoli" du fond (translucide, floute le desktop derrière)
+    # Variante translucide du fond ("verre dépoli")
     rgb=$(jq -r '.colors.surface.dark.color' palette.json | tr -d '#')
     hard=$((0x$(printf '%s' "$rgb" | cut -c1-2)))
     soft=$((0x$(printf '%s' "$rgb" | cut -c3-4)))
     deep=$((0x$(printf '%s' "$rgb" | cut -c5-6)))
     printf '@define-color base_glass rgba(%s, %s, %s, 0.45);\n' "$hard" "$soft" "$deep" >> $out/colors.css
     grep -q '@define-color' $out/colors.css
-    # --- Neovim : table Lua chargée par theme.lua (voir modules/home/nvim) ---
-    # Mêmes rôles Material You que colors.css/kitty.conf, + secondary/tertiary
-    # pour distinguer chaînes/constantes (secondary) et types (tertiary) dans
-    # la coloration syntaxique treesitter.
+    # Table Lua chargée par theme.lua (nvim)
     jq -r '
       "return {",
       "  foreground = \"" + .colors.on_surface.dark.color         + "\",",
@@ -56,10 +51,7 @@
       "}"
     ' palette.json > $out/colors-matugen.lua
     grep -q '^return {' $out/colors-matugen.lua
-    # --- Rofi : syntaxe .rasi (pas CSS -> pas de @define-color) ---
-    # Mêmes rôles Material You que colors.css, + error-soft (variante
-    # translucide de error, même technique que base_glass ci-dessus) et
-    # radius (rayon de coin partagé par les layouts *-layout.rasi).
+    # Rofi : syntaxe .rasi, pas de @define-color
     jq -r '
       "* {",
       "  base:      " + .colors.surface.dark.color         + ";",
@@ -79,7 +71,7 @@
     eb=$((0x$(printf '%s' "$erb" | cut -c5-6)))
     sed -i "s/^}/  error-soft: rgba($er, $eg, $eb, 0.18);\n}/" $out/rofi-colors.rasi
     grep -q 'error-soft' $out/rofi-colors.rasi
-    # --- Kitty : fond/texte/curseur + 16 couleurs ANSI (base16) ---
+    # Kitty : fond/texte/curseur + 16 couleurs ANSI
     jq -r '
       "background            " + .colors.surface_variant.dark.color,
       "foreground            " + .colors.on_surface.dark.color,
@@ -89,9 +81,7 @@
       "selection_foreground  " + .colors.on_primary.dark.color
     ' palette.json > $out/kitty.conf
     printf 'background_opacity 0.40\n' >> $out/kitty.conf
-    # 16 couleurs ANSI (base16 dark) + clamp de luminance : garantit la
-    # lisibilité sur fond verre translucide (relève les trop sombres,
-    # abaisse les trop claires) tout en gardant la teinte matugen.
+    # Clamp de luminance : garantit la lisibilité sur fond translucide.
     jq -r '
       ("0123456789abcdef" as $hex
        | def dv(c): ($hex|index(c)) as $i | if $i == null then error("hex digit") else $i end;
@@ -113,12 +103,7 @@
             | "color\($k) #\(hx($nr))\(hx($ng))\(hx($nb))"))
     ' palette.json >> $out/kitty.conf
     grep -q '^color15 ' $out/kitty.conf
-    # --- Zen Browser : thème Material You + "verre dépoli" ---
-    # Mêmes rôles matugen que colors.css/kitty.conf. Le fond est translucide
-    # (alpha 0.45) pour laisser le flou Hyprland (decoration.blur.xray)
-    # apparaître derrière le chrome du navigateur.
-    # Les variables bash du heredoc sont échappées en ''${var} pour rester un
-    # littéral ''${var} exécuté par le builder (et non interpolé par Nix).
+    # Zen Browser : ''${var} échappé pour rester un littéral bash, pas interpolé par Nix.
     rgba() {
       local h a r g b
       h=$(printf '%s' "$1" | tr -d '#')
@@ -135,7 +120,6 @@
     tert=$(jq -r '.colors.tertiary.dark.color' palette.json)
     outl=$(jq -r '.colors.outline.dark.color' palette.json)
     cat > $out/zenChrome.css <<EOF
-/* Zen Browser : palette Material You du wallpaper (voir theming.nix) */
 :root {
   --zen-main-browser-background: $(rgba "$sfv" 0.45);
   --zen-main-browser-background-toolbar: var(--zen-main-browser-background);
@@ -157,12 +141,10 @@
 }
 EOF
     grep -q -- '--zen-colors-primary' $out/zenChrome.css
-    # --- Vesktop (Vencord) : palette Material You, mêmes rôles que colors.css ---
+    # Vesktop (Vencord)
     cat > $out/vesktop.theme.css <<EOF
 /**
  * @name Matugen Wallpaper Theme
- * @description Palette Material You dérivée du wallpaper (voir theming.nix)
- * @author theming.nix
  * @version 1.0.0
  */
 :root {

@@ -5,11 +5,7 @@ import IconToggle from "./IconToggle"
 
 const network = AstalNetwork.get_default()
 
-// AccessPoint.activate(password, callback, target) : les réseaux ouverts se
-// connectent directement (password=null) ; les réseaux protégés affichent un
-// cadenas mais ne sont pas cliquables ici (pas de saisie de mot de passe :
-// hors périmètre de cette app, une vraie boîte de dialogue serait une
-// fonctionnalité à part entière).
+// Réseaux ouverts uniquement : pas de saisie de mot de passe ici.
 function AccessPointRow(ap: AstalNetwork.AccessPoint) {
     const openNetwork = !ap.requiresPassword
 

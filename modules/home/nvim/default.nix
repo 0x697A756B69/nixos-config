@@ -1,24 +1,16 @@
 { config, pkgs, ... }:
 
 {
-  # Palette Material You générée par matugen (voir modules/home/theming/matugen) :
-  # jamais branchée avant cette étape, theme.lua faisait systématiquement un
-  # fallback silencieux sur des couleurs codées en dur. `dofile` lit ce chemin
-  # absolu (voir theme.lua) donc le fichier doit être déployé exactement là.
+  # theme.lua charge ce chemin en dur via dofile().
   xdg.configFile."nvim/lua/colors-matugen.lua".source =
     "${config.styling.palette}/colors-matugen.lua";
   xdg.configFile."nvim/lua/theme.lua".source = ./theme.lua;
 
-  #Install Nixvim
   programs.nixvim = {
     enable = true;
 
     # ---------- Apparence ----------
-    # Pas de colorscheme dédié : nvim gère les syntaxes via treesitter (API
-    # native) et le thème par défaut. La palette Material You du wallpaper
-    # (voir modules/home/theming/matugen) est appliquée par-dessus via
-    # theme.lua pour le fond, le texte, les commentaires, la sélection, les
-    # accents et les groupes de syntaxe de base.
+    # Pas de colorscheme dédié : theme.lua applique la palette matugen par-dessus.
     plugins.web-devicons.enable = true;
     plugins.bufferline.enable = true;
     plugins.lualine.enable = true;
@@ -136,8 +128,6 @@
 
     extraPlugins = with pkgs.vimPlugins; [ ];
 
-    # Chemin absolu (voir theme.lua) : fonctionne pour izuki comme pour un
-    # éventuel `sudo nvim` (symlink store, monde lisible).
     extraConfigLua = ''
       dofile("/home/izuki/.config/nvim/lua/theme.lua")
     '';

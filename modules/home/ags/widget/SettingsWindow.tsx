@@ -4,10 +4,7 @@ import WifiTab from "./WifiTab"
 import BluetoothTab from "./BluetoothTab"
 import DisplayTab, { refreshOnOpen as refreshDisplayTab } from "./DisplayTab"
 
-// Gtk.ScrolledWindow n'est pas pré-emballé par astal/gtk4 (absent de
-// widget.ts, contrairement à Box/Button/etc.) — même technique que le
-// fichier source l'utilise pour ses propres widgets : astalify() est
-// exporté publiquement pour ça (voir gtk4/index.ts).
+// Gtk.ScrolledWindow n'est pas pré-emballé par astal/gtk4, d'où astalify().
 const ScrolledWindow = astalify<Gtk.ScrolledWindow, Gtk.ScrolledWindow.ConstructorProps>(Gtk.ScrolledWindow)
 
 export type TabId = "wifi" | "bluetooth" | "display"
@@ -20,17 +17,11 @@ const TABS: { id: TabId; label: string }[] = [
 
 const activeTab = Variable<TabId>("wifi")
 
-// Référence remplie par `setup` à la construction (voir _astal.ts:
-// construct() invoque `setup(self)` une fois le widget créé) — permet de
-// piloter `visible` depuis app.ts sans passer par `ags toggle` (voir
-// commentaire dans app.ts sur pourquoi : on veut ouvrir/basculer d'onglet,
-// jamais fermer par erreur depuis un autre module).
+// Rempli par `setup` à la construction, pour piloter `visible` depuis app.ts.
 let win: Astal.Window | null = null
 
-// Point d'entrée unique pour changer d'onglet, que ce soit depuis la
-// sidebar (clic interne) ou depuis "ags request open:X" (clic droit
-// waybar, voir app.ts) — sans ça, cliquer "Écran" dans la sidebar
-// contournerait le rafraîchissement de l'état HDR (refreshOnOpen).
+// Point d'entrée unique pour changer d'onglet (sidebar ou requestHandler) :
+// garantit le refresh HDR à chaque passage sur l'onglet Écran.
 function switchTo(tab: TabId) {
     activeTab.set(tab)
     if (tab === "display") refreshDisplayTab()
@@ -41,17 +32,12 @@ export function showTab(tab: TabId) {
     if (win) win.visible = true
 }
 
-// Ouverture générique (icône réglages waybar, voir modules/home/waybar
-// custom/settings) : bascule l'app sur l'onglet déjà actif (toggle), sans
-// forcer un onglet précis comme showTab (utilisé par les clics droits
-// wifi/bluetooth qui, eux, savent sur quel onglet ils veulent atterrir et
-// ne doivent jamais fermer par erreur).
+// Toggle générique (icône réglages waybar) : garde l'onglet actif.
 export function openSettings() {
     if (win) win.visible = !win.visible
 }
 
-// Tuile carrée (140x140, largeur = hauteur = largeur de la sidebar) plutôt
-// qu'une ligne de texte — remplit toute la colonne.
+// Tuile carrée remplissant toute la colonne (140x140).
 function SidebarButton({ id, label }: { id: TabId; label: string }) {
     return <button
         cssClasses={bind(activeTab).as(t => t === id ? ["sidebar-btn", "active"] : ["sidebar-btn"])}
@@ -64,12 +50,8 @@ function SidebarButton({ id, label }: { id: TabId; label: string }) {
     </button>
 }
 
-// Un seul <box> par onglet, visibilité conditionnée par l'onglet actif
-// (pattern déjà vérifié dans l'ancien NetworkPanel/BluetoothPanel — pas de
-// <stack> GTK non testé ici). Contenu dans un ScrolledWindow : la fenêtre
-// a une taille fixe (voir .panel-box), donc un onglet avec beaucoup de
-// contenu (la liste de résolutions de l'onglet Écran) doit défiler plutôt
-// que faire grandir la fenêtre.
+// Un <box> par onglet, visibilité conditionnée sur l'onglet actif.
+// ScrolledWindow : la fenêtre a une taille fixe, le contenu doit défiler.
 function TabContainer(id: TabId, child: Gtk.Widget) {
     return <box visible={bind(activeTab).as(t => t === id)} cssClasses={["tab-content"]} vexpand>
         <ScrolledWindow vexpand hscrollbarPolicy={Gtk.PolicyType.NEVER} vscrollbarPolicy={Gtk.PolicyType.AUTOMATIC}>
@@ -86,11 +68,7 @@ export default function SettingsWindow() {
         cssClasses={["Panel"]}
         exclusivity={Astal.Exclusivity.NORMAL}
         keymode={Astal.Keymode.ON_DEMAND}
-        // Centrée comme le sélecteur d'app (rofi, voir modules/home/rofi/
-        // config-layout.rasi) plutôt qu'ancrée sous l'encoche waybar :
-        // aucun anchor posé, laisse le compositeur centrer la surface
-        // layer-shell (comportement par défaut sans ancrage) — à confirmer
-        // visuellement, pas de doc Astal explicite là-dessus.
+        // Pas d'anchor : la surface layer-shell se centre par défaut.
         application={App}
         setup={self => { win = self }}
     >

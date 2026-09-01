@@ -5,16 +5,8 @@ import IconToggle from "./IconToggle"
 
 const hypr = AstalHyprland.get_default()
 
-// AstalHyprland (AstalHyprland-0.1.gir) n'expose pas l'état HDR/color-
-// management (pas de propriété dédiée sur Monitor), et sa propriété
-// available-modes s'est révélée toujours `null` en conditions réelles sur
-// ce matériel (vérifié directement : get_available_modes() renvoie null
-// même après sync_monitors(), avant et après — pas un problème de timing).
-// Les deux sont donc lus via `hyprctl -j monitors`, comme le faisait
-// l'ancien module waybar custom/hdr + script wb-hdr (retirés, remplacés
-// par cet onglet) pour HDR déjà. hdrOn suivi localement (seule cette app
-// peut le changer désormais) ; availableModes resynchronisé à chaque
-// ouverture d'onglet.
+// AstalHyprland n'expose ni l'état HDR ni des available-modes fiables
+// (toujours null sur ce matériel) : les deux sont lus via `hyprctl -j monitors`.
 const hdrOn = Variable(false)
 const availableModes = Variable<string[]>([])
 
@@ -31,21 +23,16 @@ function refreshMonitorInfo(monitorName: string) {
         .catch(() => { })
 }
 
-// Le composant n'est construit qu'une fois (fenêtre toujours mappée, voir
-// SettingsWindow.tsx) : ce n'est donc pas à la construction qu'il faut
-// resynchroniser l'état mais à chaque ouverture de l'onglet — appelé
-// depuis showTab() dans SettingsWindow.tsx.
+// Appelé depuis showTab() : le composant n'est construit qu'une fois
+// (fenêtre toujours mappée), donc resync à l'ouverture, pas à la construction.
 export function refreshOnOpen() {
     const monitors = hypr.get_monitors()
     if (monitors[0]) refreshMonitorInfo(monitors[0].name)
 }
 
-// Un seul point d'écriture : reprend le mécanisme déjà en prod dans
-// l'ancien wb-hdr (hyprctl eval "hl.monitor({...})"), en fournissant
-// systématiquement l'état complet connu (mode/position/scale/cm/bitdepth)
-// pour éviter qu'un changement partiel (ex. juste vrr) ne réinitialise le
-// reste — vérifié en conditions réelles que `vrr` est un champ accepté par
-// hl.monitor (bascule on/off confirmée via hyprctl monitors -j).
+// Un seul point d'écriture : envoie toujours l'état complet connu
+// (mode/position/scale/cm/bitdepth/vrr) pour éviter qu'un changement
+// partiel ne réinitialise le reste.
 function applyMonitor(monitor: AstalHyprland.Monitor, overrides: {
     mode?: string
     scale?: number
