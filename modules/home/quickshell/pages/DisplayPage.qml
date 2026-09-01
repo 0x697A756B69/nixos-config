@@ -13,11 +13,6 @@ Item {
     property var monitor: null
     property var availableModes: []
     property bool freqExpanded: false
-    // -1 = no pending scale change. Holds the target value between rapid
-    // +/- clicks so they build on each other instead of on a stale
-    // root.monitor.scale read back before the previous hyprctl call landed.
-    property real pendingScale: -1
-    readonly property real displayScale: pendingScale >= 0 ? pendingScale : (monitor ? monitor.scale : 1.0)
     // availableModes entries look like "2560x1440@279.96Hz"; keep only the
     // ones matching the current resolution (resolution itself is read-only here).
     readonly property var freqModes: monitor
@@ -62,24 +57,7 @@ Item {
         onExited: root.refresh()
     }
 
-    // Hyprland snaps the requested scale to its own "clean" values (e.g.
-    // asking for 1.10 can come back as 1.07) — coalesce rapid +/- clicks
-    // into one call instead of racing several hyprctl eval calls against
-    // each other, each computed from a scale that hasn't been confirmed yet.
-    Timer {
-        id: scaleDebounce
-        interval: 180
-        onTriggered: {
-            root.applyMonitor({ scale: root.pendingScale })
-            root.pendingScale = -1
-        }
-    }
-    function requestScale(value) {
-        root.pendingScale = Math.max(1.0, Math.min(2.0, value))
-        scaleDebounce.restart()
-    }
-
-    // Entry point for every control (HDR/VRR/scale/mode): if a previous
+    // Entry point for every control (HDR/VRR/mode): if a previous
     // request hasn't been confirmed by hyprctl yet, merge into it instead of
     // firing a second hyprctl eval computed from the same stale monitor.
     function applyMonitor(overrides) {
@@ -147,41 +125,6 @@ Item {
                 offIcon: "󰓨"
                 tooltip: "Activer/désactiver le taux de rafraîchissement variable"
                 onToggled: root.applyMonitor({ vrr: !vrrToggle.active })
-            }
-        }
-
-        SettingRow {
-            icon: "󰍉"
-            label: "Échelle"
-            Text {
-                text: root.monitor ? root.displayScale.toFixed(2) + "×" : ""
-                color: Colors.c.text_alt
-            }
-            Rectangle {
-                implicitWidth: 22
-                implicitHeight: 22
-                radius: 7
-                color: Colors.baseGlassColor
-                Text { anchors.centerIn: parent; text: "−"; color: Colors.c.text }
-                MouseArea {
-                    anchors.fill: parent
-                    enabled: root.monitor && root.displayScale > 1.0
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.requestScale(root.displayScale - 0.05)
-                }
-            }
-            Rectangle {
-                implicitWidth: 22
-                implicitHeight: 22
-                radius: 7
-                color: Colors.baseGlassColor
-                Text { anchors.centerIn: parent; text: "+"; color: Colors.c.text }
-                MouseArea {
-                    anchors.fill: parent
-                    enabled: root.monitor && root.displayScale < 2.0
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.requestScale(root.displayScale + 0.05)
-                }
             }
         }
 
