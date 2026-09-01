@@ -3,7 +3,7 @@
 let
   mainMod = "SUPER";
   terminal = "kitty";
-  menu = "wofi --show drun";
+  menu = "walker";
   inline = lib.generators.mkLuaInline;
   infinite = config.programs.hyprland-infinite.package;
   core = "${infinite}/lib/hyprland-infinite/infinite_desktop_core.py";
@@ -73,6 +73,8 @@ in
           (inline ''
             function()
               hl.exec_cmd("${py}/bin/python ${core} 1.6 > /tmp/infinite-desktop.log 2>&1")
+              hl.exec_cmd("elephant")
+              hl.exec_cmd("walker --gapplication-service")
               hl.exec_cmd("wb-wallpaper")
               hl.exec_cmd("wb-wsd")
               hl.exec_cmd("waybar")

@@ -10,7 +10,7 @@
     ./modules/home/waybar
     ./modules/home/theming/matugen
     ./modules/home/kitty
-    ./modules/home/wofi
+    ./modules/home/walker
     ./modules/home/rofi
     ./modules/home/quickshell
     ./modules/home/nvim
