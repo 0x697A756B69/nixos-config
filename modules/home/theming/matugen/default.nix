@@ -36,6 +36,9 @@
     printf '@define-color base_glass rgba(%s, %s, %s, 0.45);\n' "$hard" "$soft" "$deep" >> $out/colors.css
     grep -q '@define-color' $out/colors.css
     # Flat JSON, same roles as colors.css, for QML (Quickshell settings app).
+    # panel: matugen's own "surface container high" role (Material 3 elevated
+    # surface token) rather than surface+alpha — a nearly-opaque card still
+    # reads as on-theme instead of a flat dark blend. #f2 prefix = ~0.95 alpha.
     jq -n --slurpfile p palette.json --argjson gr "$hard" --argjson gg "$soft" --argjson gb "$deep" '
       $p[0].colors as $c | {
         base:      $c.surface.dark.color,
@@ -48,7 +51,8 @@
         error:     $c.error.dark.color,
         border:    $c.surface_variant.dark.color,
         warning:   $c.tertiary.dark.color,
-        base_glass: { r: $gr, g: $gg, b: $gb, a: 0.45 }
+        base_glass: { r: $gr, g: $gg, b: $gb, a: 0.45 },
+        panel: ("#f2" + ($c.surface_container_high.dark.color | ltrimstr("#")))
       }
     ' > $out/colors.json
     grep -q '"accent"' $out/colors.json

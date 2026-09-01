@@ -59,7 +59,7 @@ PanelWindow {
         width: 640
         height: 640
         radius: 22
-        color: Colors.panelColor
+        color: Colors.c.panel
 
         property bool userMoved: false
         anchors.centerIn: userMoved ? undefined : parent
@@ -99,7 +99,9 @@ PanelWindow {
                 Layout.fillHeight: true
                 Layout.preferredWidth: 190
                 radius: 17
-                color: Colors.panelColor
+                // Same opaque brown as waybar's notches (Colors.c.base), not
+                // the lighter panel tone used for the content side.
+                color: Colors.c.base
 
                 ColumnLayout {
                     anchors.fill: parent
