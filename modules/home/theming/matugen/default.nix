@@ -5,7 +5,7 @@
     type = lib.types.package;
     description = ''
       Material You palette derived from the wallpaper by matugen at build time.
-      colors.css, colors-matugen.lua, rofi-colors.rasi, kitty.conf, zenChrome.css.
+      colors.css, colors.json, colors-matugen.lua, rofi-colors.rasi, kitty.conf, zenChrome.css.
     '';
   };
   config.styling.palette = pkgs.runCommand "desktop-palette" {
@@ -35,6 +35,23 @@
     deep=$((0x$(printf '%s' "$rgb" | cut -c5-6)))
     printf '@define-color base_glass rgba(%s, %s, %s, 0.45);\n' "$hard" "$soft" "$deep" >> $out/colors.css
     grep -q '@define-color' $out/colors.css
+    # Flat JSON, same roles as colors.css, for QML (Quickshell settings app).
+    jq -n --slurpfile p palette.json --argjson gr "$hard" --argjson gg "$soft" --argjson gb "$deep" '
+      $p[0].colors as $c | {
+        base:      $c.surface.dark.color,
+        base_alt:  $c.surface_variant.dark.color,
+        text:      $c.on_surface.dark.color,
+        text_alt:  $c.on_surface_variant.dark.color,
+        accent:    $c.primary.dark.color,
+        on_accent: $c.on_primary.dark.color,
+        disabled:  $c.outline.dark.color,
+        error:     $c.error.dark.color,
+        border:    $c.surface_variant.dark.color,
+        warning:   $c.tertiary.dark.color,
+        base_glass: { r: $gr, g: $gg, b: $gb, a: 0.45 }
+      }
+    ' > $out/colors.json
+    grep -q '"accent"' $out/colors.json
     # Lua table loaded by theme.lua (nvim)
     jq -r '
       "return {",

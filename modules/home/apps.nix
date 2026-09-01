@@ -15,5 +15,7 @@
     blueman
     ripgrep
     networkmanager_dmenu
+    discord
+    # lsfg_vk  # undefined in nixpkgs as-is, commented out to unblock builds — see with 0x697A756B69
   ];
 }

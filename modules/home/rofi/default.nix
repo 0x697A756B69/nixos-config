@@ -12,7 +12,7 @@
   xdg.configFile."rofi/config-layout.rasi".source = ./config-layout.rasi;
   xdg.configFile."rofi/power-layout.rasi".source = ./power-layout.rasi;
   xdg.configFile."rofi/capture-layout.rasi".source = ./capture-layout.rasi;
-  # Wifi menu draft, unreferenced: superseded by the AGS/Astal app.
+  # Wifi menu draft, unreferenced: superseded by the Quickshell settings app.
   xdg.configFile."rofi/net-layout.rasi".source = ./net-layout.rasi;
 
   # @import loads the colors, @theme the layout on top.

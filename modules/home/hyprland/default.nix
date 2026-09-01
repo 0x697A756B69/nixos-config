@@ -32,12 +32,9 @@ in
         opacity = "0.95 0.95";
       };
 
-      # Settings window stays mapped; visibility is toggled in JS (SettingsWindow.tsx).
-      # blur is required here: layer-shells don't inherit the global blur.xray.
       layer_rule = {
         match.namespace = "^(settings-window)$";
         animation = "pop";
-        blur = true;
       };
 
       config = {

@@ -41,7 +41,7 @@
         "custom/settings" = {
           # Opens the settings app on the already-active tab.
           format = "󰒓";
-          on-click = "ags request open";
+          on-click = "wb-settings open";
           tooltip = false;
         };
         "custom/prev" = {
@@ -119,7 +119,7 @@ pkill -RTMIN+1 waybar''}";
           exec = "wb-bt";
           # Left click: toggle + auto-reconnect (wb-bt). Right click: Bluetooth tab.
           on-click = "wb-bt toggle";
-          on-click-right = "ags request open:bluetooth";
+          on-click-right = "wb-settings openTab bluetooth";
           signal = 3;
           interval = 30;
           return-type = "json";
@@ -141,14 +141,14 @@ pkill -RTMIN+1 waybar''}";
           format-icons = [ "󰤯" "󰤟" "󰤢" "󰤨" ];
           format-disconnected = "";
           on-click = "wb-net toggle";
-          on-click-right = "ags request open:wifi";
+          on-click-right = "wb-settings openTab wifi";
           tooltip = false;
         };
         "network#ethernet" = {
           interface = "en*";
           format-ethernet = "󰈀";
           format-disconnected = "";
-          on-click-right = "ags request open:wifi";
+          on-click-right = "wb-settings openTab wifi";
           tooltip = false;
         };
       };
