@@ -130,7 +130,7 @@
     extraPlugins = with pkgs.vimPlugins; [ ];
 
     extraConfigLua = ''
-      dofile("/home/izuki/.config/nvim/lua/theme.lua")
+      dofile("${config.home.homeDirectory}/.config/nvim/lua/theme.lua")
     '';
   };
 }

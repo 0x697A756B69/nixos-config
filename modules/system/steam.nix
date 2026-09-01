@@ -12,7 +12,7 @@
 
   programs.steam.extraCompatPackages = [ pkgs.steamtinkerlaunch ];
 
-  #List packages installed in steam profil
+  # Packages installed in the Steam profile
   programs.steam.package = pkgs.steam.override {
     extraPkgs = pkgs': with pkgs'; [
       libXcursor

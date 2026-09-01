@@ -37,7 +37,7 @@ in
 {
   options.programs.hyprland-infinite.package = lib.mkOption {
     type = lib.types.package;
-    description = "Paquet des scripts hyprland-infinite-desktop-v2";
+    description = "Package for the hyprland-infinite-desktop-v2 scripts.";
   };
 
   config = {

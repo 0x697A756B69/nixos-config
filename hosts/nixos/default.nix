@@ -24,13 +24,16 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   services.udev.extraRules = ''
-  # Custom USB dongle (VID:PID 3554:f508): user access
-  SUBSYSTEMS=="usb", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="f508", MODE="0666", GROUP="users"
+  # Custom USB dongle (VID:PID 3554:f508): grant access to the user at the
+  # active seat only (systemd-logind ACL), instead of world-writable access.
+  SUBSYSTEMS=="usb", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="f508", TAG+="uaccess"
 
   # Same device: disable autosuspend persistently
   SUBSYSTEM=="usb", ATTR{idVendor}=="3554", ATTR{idProduct}=="f508", TEST=="power/control", ATTR{power/control}="on"
 '';
-  # Use latest kernel.
+  # Default (not latest) kernel: NVIDIA's driver modules aren't always
+  # built yet against the newest kernel, so linuxPackages_latest risks
+  # breaking the GPU on rebuild. Stick with the release's default kernel.
   boot.kernelPackages = pkgs.linuxPackages;
 
   boot.kernelParams = [
