@@ -15,6 +15,7 @@
     stdenv.cc.cc
     zlib
     glib
+    (glfw.override { withMinecraftPatch = true; })
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
