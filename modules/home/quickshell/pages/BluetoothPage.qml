@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Io
 import "../"
 
@@ -11,6 +12,13 @@ Item {
     property bool btEnabled: false
     property var devices: []
     property var _paired: ({})
+
+    // bluetoothctl failures (bluetoothd down, etc.) otherwise show up as a
+    // silently empty list with no indication anything went wrong.
+    function reportError(label, text) {
+        if (!text.trim().length) return
+        Quickshell.execDetached(["notify-send", "-u", "critical", "-t", "4000", label, text.trim()])
+    }
 
     function refresh() {
         powerProc.running = false
@@ -26,6 +34,9 @@ Item {
         command: ["bluetoothctl", "show"]
         stdout: StdioCollector {
             onStreamFinished: root.btEnabled = text.includes("Powered: yes")
+        }
+        stderr: StdioCollector {
+            onStreamFinished: root.reportError("Bluetooth", text)
         }
     }
 
@@ -61,6 +72,9 @@ Item {
                 connectedProc.running = true
             }
         }
+        stderr: StdioCollector {
+            onStreamFinished: root.reportError("Bluetooth", text)
+        }
     }
 
     Process {
@@ -82,6 +96,9 @@ Item {
                 list.sort((a, b) => (b.connected - a.connected) || a.name.localeCompare(b.name))
                 root.devices = list
             }
+        }
+        stderr: StdioCollector {
+            onStreamFinished: root.reportError("Bluetooth", text)
         }
     }
 

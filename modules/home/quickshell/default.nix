@@ -129,13 +129,26 @@ in
   config = {
     programs.quickshell-settings.package = quickshellSrc;
 
+    # Supervised instead of a bare `hl.exec_cmd` fire-and-forget at session
+    # start: if the QML process crashes (or is killed), systemd restarts it
+    # on its own instead of the settings app staying dead until a full
+    # Hyprland restart (SUPER+M).
+    systemd.user.services.quickshell-settings = {
+      Unit.Description = "Quickshell settings app (Wi-Fi/Bluetooth/Display/Wallpaper)";
+      Service = {
+        ExecStart = "${pkgs.quickshell}/bin/quickshell -p ${quickshellSrc}";
+        Restart = "on-failure";
+        RestartSec = 1;
+      };
+    };
+
     home.packages = [
       pkgs.quickshell
       (pkgs.writeShellScriptBin "wb-dropdown" ''
         #!/usr/bin/env bash
-        exec ${pkgs.quickshell}/bin/quickshell -p ${quickshellSrc}
+        exec systemctl --user start quickshell-settings.service
       '')
-      # ipc call needs -p pointing at the exact same path wb-dropdown was
+      # ipc call needs -p pointing at the exact same path the service was
       # launched from; this wrapper bakes it in so waybar can just call
       # `wb-settings open` / `wb-settings openTab wifi` etc.
       (pkgs.writeShellScriptBin "wb-settings" ''

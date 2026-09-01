@@ -11,6 +11,31 @@
     pkgs.elephant
   ];
 
+  # Supervised instead of a bare `hl.exec_cmd` at session start (see
+  # modules/home/hyprland): if either daemon crashes mid-session, systemd
+  # restarts it instead of SUPER+R silently doing nothing until a full
+  # Hyprland restart.
+  systemd.user.services.elephant = {
+    Unit.Description = "Elephant data provider daemon for the walker launcher";
+    Service = {
+      ExecStart = "${pkgs.elephant}/bin/elephant";
+      Restart = "on-failure";
+      RestartSec = 1;
+    };
+  };
+
+  systemd.user.services.walker = {
+    Unit = {
+      Description = "Walker launcher background service (SUPER+R)";
+      After = [ "elephant.service" ];
+    };
+    Service = {
+      ExecStart = "${pkgs.walker}/bin/walker --gapplication-service";
+      Restart = "on-failure";
+      RestartSec = 1;
+    };
+  };
+
   xdg.configFile."walker/config.toml".text = ''
     force_keyboard_focus = true       # forces keyboard forcus to stay in Walker
     close_when_open = true             # close walker when invoking while already opened

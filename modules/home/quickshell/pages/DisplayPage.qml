@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Io
 import "../"
 
@@ -24,6 +25,13 @@ Item {
         listProc.running = true
     }
 
+    // hyprctl failures otherwise show up as a silently blank page (see
+    // the empty catch below) with no indication anything went wrong.
+    function reportError(text) {
+        if (!text.trim().length) return
+        Quickshell.execDetached(["notify-send", "-u", "critical", "-t", "4000", "Écran", text.trim()])
+    }
+
     Component.onCompleted: refresh()
 
     // Set whenever applyMonitor() is called while a previous call is still
@@ -42,13 +50,16 @@ Item {
                         root.monitor = mons[0]
                         root.availableModes = mons[0].availableModes || []
                     }
-                } catch (e) { }
+                } catch (e) { root.reportError("hyprctl a renvoyé une réponse invalide : " + e.message) }
                 if (root.pendingOverrides) {
                     const next = root.pendingOverrides
                     root.pendingOverrides = null
                     root._dispatchMonitor(next)
                 }
             }
+        }
+        stderr: StdioCollector {
+            onStreamFinished: root.reportError(text)
         }
     }
 

@@ -73,8 +73,7 @@ in
           (inline ''
             function()
               hl.exec_cmd("${py}/bin/python ${core} 1.6 > /tmp/infinite-desktop.log 2>&1")
-              hl.exec_cmd("elephant")
-              hl.exec_cmd("walker --gapplication-service")
+              hl.exec_cmd("systemctl --user start elephant.service walker.service")
               hl.exec_cmd("wb-wallpaper")
               hl.exec_cmd("wb-wsd")
               hl.exec_cmd("waybar")

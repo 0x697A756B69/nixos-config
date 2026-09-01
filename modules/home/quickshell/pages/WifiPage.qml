@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Io
 import "../"
 
@@ -10,6 +11,13 @@ Item {
 
     property bool wifiEnabled: false
     property var accessPoints: []
+
+    // nmcli failures (NetworkManager down, etc.) otherwise show up as a
+    // silently empty list with no indication anything went wrong.
+    function reportError(label, text) {
+        if (!text.trim().length) return
+        Quickshell.execDetached(["notify-send", "-u", "critical", "-t", "4000", label, text.trim()])
+    }
 
     function refresh() {
         radioProc.running = false
@@ -25,6 +33,9 @@ Item {
         command: ["nmcli", "radio", "wifi"]
         stdout: StdioCollector {
             onStreamFinished: root.wifiEnabled = text.trim() === "enabled"
+        }
+        stderr: StdioCollector {
+            onStreamFinished: root.reportError("Wi-Fi", text)
         }
     }
 
@@ -66,6 +77,9 @@ Item {
                 aps.sort((a, b) => b.signal - a.signal)
                 root.accessPoints = aps
             }
+        }
+        stderr: StdioCollector {
+            onStreamFinished: root.reportError("Wi-Fi", text)
         }
     }
 
