@@ -24,6 +24,22 @@ hostname, autologin) ; tout le reste vit dans `modules/system/`.
 sudo nixos-rebuild switch --flake .#nixos
 ```
 
+Ou, une fois `just` installé (paquet système) :
+
+```
+just check     # évalue + build sans rien toucher au système
+just test      # applique pour la session en cours, revert au reboot
+just boot      # applique seulement au prochain boot
+just rebuild   # switch immédiat (équivalent à la commande ci-dessus)
+just update    # met à jour tous les inputs du flake
+just fmt       # formate tous les .nix avec nixpkgs-fmt
+just gc        # supprime les anciennes générations
+```
+
+Sur une machine toute neuve, avant le premier `nixos-rebuild switch`, `just`
+n'est pas encore installé : utiliser la commande brute pour ce premier
+rebuild.
+
 ## Réinstallation sur une nouvelle machine
 
 1. Booter un live ISO NixOS, réseau up, flakes activées.

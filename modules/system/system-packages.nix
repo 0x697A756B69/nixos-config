@@ -9,6 +9,8 @@
 
   vscodium
   nixd
+  nixpkgs-fmt
+  just
   opencode-desktop
   protonup-qt
   (symlinkJoin {
