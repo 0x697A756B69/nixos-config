@@ -80,7 +80,7 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 4
+        spacing: 0
 
         Text {
             text: "Wi-Fi"

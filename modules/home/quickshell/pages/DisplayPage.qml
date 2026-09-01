@@ -87,14 +87,22 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 4
+        spacing: 0
         visible: root.monitor !== null
 
         Text {
-            text: root.monitor ? (root.monitor.description || root.monitor.name) : ""
+            text: "Écran"
             font.bold: true
             font.pixelSize: 15
             color: Colors.c.text
+            Layout.fillWidth: true
+        }
+
+        Text {
+            text: root.monitor ? (root.monitor.description || root.monitor.name) : ""
+            font.italic: true
+            font.pixelSize: 11
+            color: Colors.c.text_alt
             elide: Text.ElideRight
             Layout.fillWidth: true
             Layout.bottomMargin: 8
