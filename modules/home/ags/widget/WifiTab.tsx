@@ -1,6 +1,7 @@
 import { bind } from "astal"
 import { Astal, Gtk } from "astal/gtk4"
 import AstalNetwork from "gi://AstalNetwork?version=0.1"
+import IconToggle from "./IconToggle"
 
 const network = AstalNetwork.get_default()
 
@@ -31,6 +32,13 @@ export default function WifiTab() {
     return <box vertical>
         <box>
             <label label="Wi-Fi" hexpand halign={Gtk.Align.START} cssClasses={["tab-title"]} />
+            {wifi && <IconToggle
+                active={bind(wifi, "enabled")}
+                onIcon="󰖩"
+                offIcon="󰖪"
+                tooltip="Activer/désactiver le Wi-Fi"
+                onToggle={() => wifi.set_enabled(!wifi.enabled)}
+            />}
             <button
                 label=""
                 tooltipText="Rechercher des réseaux"

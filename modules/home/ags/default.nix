@@ -65,21 +65,11 @@ let
       font-weight: bold;
     }
     .sidebar-btn:hover {
-      background: @base_alt;
+      background: alpha(@base_alt, 0.4);
     }
     .sidebar-btn.active {
-      background: @accent;
-      color: @on_accent;
-    }
-    .close-btn {
-      padding: 8px 10px;
-      border-radius: 8px;
-      color: @text_alt;
-      background: transparent;
-    }
-    .close-btn:hover {
-      background: @base_alt;
-      color: @error;
+      background: alpha(@accent, 0.28);
+      color: @accent;
     }
 
     .content {
@@ -114,18 +104,23 @@ let
       background: transparent;
     }
 
-    /* Interrupteurs (bluetooth power, etc.) : GTK4 les peint en bleu par
-       défaut (Adwaita), aucun rapport avec la palette matugen. */
-    switch {
-      background: @base_alt;
-      border-radius: 999px;
+    /* Remplace les <switch> GTK (bleu Adwaita, non thémable) : bouton-icône
+       (voir widget/IconToggle.tsx) teinté à l'accent quand actif, sinon
+       glyphe neutre sur fond transparent — même famille que .sidebar-btn. */
+    .icon-toggle {
+      padding: 6px 10px;
+      border-radius: 10px;
+      color: @text_alt;
+      background: transparent;
+      font-size: 16px;
+      min-width: 0;
     }
-    switch:checked {
-      background: @accent;
+    .icon-toggle:hover {
+      background: alpha(@base_alt, 0.4);
     }
-    switch slider {
-      background: @text;
-      border-radius: 999px;
+    .icon-toggle.active {
+      color: @accent;
+      background: alpha(@accent, 0.18);
     }
 
     .list-row {
@@ -167,6 +162,7 @@ let
     cp ${./widget/WifiTab.tsx} $out/widget/WifiTab.tsx
     cp ${./widget/BluetoothTab.tsx} $out/widget/BluetoothTab.tsx
     cp ${./widget/DisplayTab.tsx} $out/widget/DisplayTab.tsx
+    cp ${./widget/IconToggle.tsx} $out/widget/IconToggle.tsx
     cp ${styleCss} $out/style.css
     cp ${packageJson} $out/package.json
   '';

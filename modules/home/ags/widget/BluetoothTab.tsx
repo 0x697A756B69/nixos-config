@@ -1,6 +1,7 @@
 import { bind } from "astal"
 import { Gtk } from "astal/gtk4"
 import AstalBluetooth from "gi://AstalBluetooth?version=0.1"
+import IconToggle from "./IconToggle"
 
 const bluetooth = AstalBluetooth.get_default()
 
@@ -31,9 +32,12 @@ export default function BluetoothTab() {
     return <box vertical>
         <box>
             <label label="Bluetooth" hexpand halign={Gtk.Align.START} cssClasses={["tab-title"]} />
-            <switch
+            <IconToggle
                 active={bind(bluetooth, "is_powered")}
-                onNotifyActive={self => { if (self.active !== bluetooth.isPowered) bluetooth.toggle() }}
+                onIcon="󰂯"
+                offIcon="󰂲"
+                tooltip="Activer/désactiver le Bluetooth"
+                onToggle={() => bluetooth.toggle()}
             />
             <button
                 label=""

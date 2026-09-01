@@ -1,6 +1,7 @@
 import { Variable, bind, execAsync } from "astal"
 import { Gtk } from "astal/gtk4"
 import AstalHyprland from "gi://AstalHyprland?version=0.1"
+import IconToggle from "./IconToggle"
 
 const hypr = AstalHyprland.get_default()
 
@@ -89,24 +90,26 @@ function MonitorSection(monitor: AstalHyprland.Monitor) {
 
         <box cssClasses={["display-row"]}>
             <label label="HDR" hexpand halign={Gtk.Align.START} />
-            <switch
+            <IconToggle
                 active={bind(hdrOn)}
-                onNotifyActive={self => {
-                    if (self.active !== hdrOn.get()) {
-                        hdrOn.set(self.active)
-                        applyMonitor(monitor, {})
-                    }
+                onIcon="󰵽"
+                offIcon="󰵾"
+                tooltip="Activer/désactiver le HDR"
+                onToggle={() => {
+                    hdrOn.set(!hdrOn.get())
+                    applyMonitor(monitor, {})
                 }}
             />
         </box>
 
         <box cssClasses={["display-row"]}>
             <label label="VRR" hexpand halign={Gtk.Align.START} />
-            <switch
+            <IconToggle
                 active={bind(monitor, "vrr")}
-                onNotifyActive={self => {
-                    if (self.active !== monitor.vrr) applyMonitor(monitor, { vrr: self.active })
-                }}
+                onIcon="󰓦"
+                offIcon="󰓨"
+                tooltip="Activer/désactiver le taux de rafraîchissement variable"
+                onToggle={() => applyMonitor(monitor, { vrr: !monitor.vrr })}
             />
         </box>
 

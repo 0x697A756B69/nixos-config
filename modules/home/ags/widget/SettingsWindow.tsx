@@ -98,9 +98,6 @@ export default function SettingsWindow() {
             <box vertical cssClasses={["sidebar"]} widthRequest={140} spacing={8}>
                 {TABS.map(SidebarButton)}
                 <box vexpand />
-                <button cssClasses={["close-btn"]} onClicked={() => { if (win) win.visible = false }}>
-                    <label label="Fermer" halign={Gtk.Align.START} hexpand />
-                </button>
             </box>
             <box vertical cssClasses={["content"]} hexpand>
                 {TabContainer("wifi", WifiTab())}
