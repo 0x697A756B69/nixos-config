@@ -1,6 +1,6 @@
 # Host "nixos": machine-specific bits only (hardware, hostname, autologin).
 # Everything else lives in modules/system/*.
-{ config, pkgs, inputs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 {
   imports = [
@@ -20,8 +20,19 @@
   ];
 
   # Bootloader
-  boot.loader.systemd-boot.enable = true;
+  # Étape (a) : module Lanzaboote ajouté, Secure Boot encore désactivé au
+  # firmware. systemd-boot est explicitement désactivé (mkForce) pour éviter
+  # que les deux bootloaders coexistent sur l'ESP partagée avec Windows.
+  boot.loader.systemd-boot.enable = lib.mkForce false;
   boot.loader.efi.canTouchEfiVariables = true;
+
+  boot.lanzaboote = {
+    enable = true;
+    # sbctl (version actuelle) stocke ses clés par défaut dans /var/lib/sbctl,
+    # pas /etc/secureboot : pkiBundle doit pointer vers l'emplacement réel
+    # utilisé par `sbctl create-keys`.
+    pkiBundle = "/var/lib/sbctl";
+  };
 
   services.udev.extraRules = ''
   # Custom USB dongle (VID:PID 3554:f508): grant access to the user at the
