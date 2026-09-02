@@ -22,9 +22,14 @@
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote/v1.1.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, spicetify-nix, home-manager, nixvim, ... }@inputs: {
+  outputs = { self, nixpkgs, spicetify-nix, home-manager, nixvim, lanzaboote, ... }@inputs: {
 
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -33,6 +38,7 @@
       modules = [
         ./hosts/nixos
         spicetify-nix.nixosModules.spicetify
+        lanzaboote.nixosModules.lanzaboote
 
         home-manager.nixosModules.home-manager
         {

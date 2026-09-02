@@ -33,5 +33,6 @@
   steamtinkerlaunch
   btop
   claude-code
+  sbctl
   ];
 }
