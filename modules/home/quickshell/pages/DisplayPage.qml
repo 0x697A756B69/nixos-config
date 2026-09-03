@@ -3,17 +3,14 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import "../"
+import "../components"
 
-// Matches the repo's actual Displays page (screenshots/6.png, Hyprland tab):
-// plain icon+label rows directly on the page with a thin bottom divider,
-// control right-aligned — no colored card/grouped-list segments here, that
-// pattern is used elsewhere in their app but not on this page.
 Item {
     id: root
 
     property var monitor: null
     property var availableModes: []
-    property bool freqExpanded: false
+    property string currentModeString: ""
     // availableModes entries look like "2560x1440@279.96Hz"; keep only the
     // ones matching the current resolution (resolution itself is read-only here).
     readonly property var freqModes: monitor
@@ -49,6 +46,8 @@ Item {
                     if (mons.length) {
                         root.monitor = mons[0]
                         root.availableModes = mons[0].availableModes || []
+                        root.currentModeString = root.monitor.width + "x" + root.monitor.height
+                            + "@" + root.monitor.refreshRate.toFixed(2) + "Hz"
                     }
                 } catch (e) { root.reportError("hyprctl a renvoyé une réponse invalide : " + e.message) }
                 if (root.pendingOverrides) {
@@ -94,6 +93,13 @@ Item {
         const bitdepth = hdrOn ? 10 : 8
         applyProc.exec(["hyprctl", "eval",
             `hl.monitor({ output = "${m.name}", mode = "${mode}", position = "${m.x}x${m.y}", scale = ${scale}, cm = "${cm}", bitdepth = ${bitdepth}, vrr = ${vrr} })`])
+    }
+
+    FrequencyModal {
+        id: freqModal
+        modes: root.freqModes
+        currentMode: root.currentModeString
+        onSelected: (mode) => root.applyMonitor({ mode: mode.replace("Hz", "") })
     }
 
     ColumnLayout {
@@ -160,65 +166,14 @@ Item {
             icon: "󰓅"
             label: "Fréquence"
             clickable: true
-            onClicked: root.freqExpanded = !root.freqExpanded
+            onClicked: freqModal.open()
             Text {
                 text: root.monitor ? root.monitor.refreshRate.toFixed(2) + " Hz" : ""
                 color: Colors.c.text_alt
             }
             Text {
-                text: root.freqExpanded ? "󰅃" : "󰅀"
+                text: "󰅀"
                 color: Colors.c.text_alt
-            }
-        }
-
-        ListView {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.topMargin: 4
-            visible: root.freqExpanded
-            clip: true
-            spacing: 0
-            model: root.freqModes
-
-            delegate: Item {
-                id: freqDelegate
-                required property var modelData
-                property bool isCurrent: root.monitor
-                    && modelData === (root.monitor.width + "x" + root.monitor.height + "@" + root.monitor.refreshRate.toFixed(2) + "Hz")
-                width: ListView.view.width
-                height: 36
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 8
-                    color: freqModeMouse.containsMouse && !freqDelegate.isCurrent ? Colors.baseGlassColor : "transparent"
-                }
-
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: 10
-                    Text {
-                        text: freqDelegate.modelData.split("@")[1]
-                        color: freqDelegate.isCurrent ? Colors.c.disabled : Colors.c.text
-                        Layout.fillWidth: true
-                    }
-                    Text {
-                        visible: freqDelegate.isCurrent
-                        text: "actuel"
-                        color: Colors.c.text_alt
-                        font.pixelSize: 11
-                    }
-                }
-
-                MouseArea {
-                    id: freqModeMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    enabled: !freqDelegate.isCurrent
-                    cursorShape: !freqDelegate.isCurrent ? Qt.PointingHandCursor : Qt.ArrowCursor
-                    onClicked: root.applyMonitor({ mode: freqDelegate.modelData.replace("Hz", "") })
-                }
             }
         }
     }

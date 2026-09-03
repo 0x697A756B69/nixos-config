@@ -12,6 +12,7 @@ Item {
     property bool btEnabled: false
     property var devices: []
     property var _paired: ({})
+    property var _discoverable: []
 
     // bluetoothctl failures (bluetoothd down, etc.) otherwise show up as a
     // silently empty list with no indication anything went wrong.
@@ -122,6 +123,14 @@ Item {
         scanProc.running = true
     }
 
+    // Reconnect all paired devices (same logic as wb-bt toggle).
+    Process {
+        id: reconnectProc
+        command: ["sh", "-c",
+            "sleep 0.5; bluetoothctl devices Paired 2>/dev/null | awk '{print $2}' | while read -r mac; do [ -n \"$mac\" ] && bluetoothctl connect \"$mac\" >/dev/null 2>&1 & done"]
+        onExited: refreshTimer.restart()
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -151,6 +160,15 @@ Item {
             label: "Rechercher des appareils"
             clickable: true
             onClicked: root.scan()
+        }
+        SettingRow {
+            icon: "󰁻"
+            label: "Reconnecter tous"
+            clickable: true
+            onClicked: {
+                reconnectProc.running = false
+                reconnectProc.running = true
+            }
         }
 
         ListView {

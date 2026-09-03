@@ -104,7 +104,7 @@ let
   '';
 
   quickshellSrc = pkgs.runCommand "quickshell-settings-src" { } ''
-    mkdir -p $out/pages
+    mkdir -p $out/pages $out/components $out/services
     cp ${./shell.qml} $out/shell.qml
     cp ${./SettingsWindow.qml} $out/SettingsWindow.qml
     cp ${./IconToggle.qml} $out/IconToggle.qml
@@ -113,8 +113,11 @@ let
     cp ${wallpapersQml} $out/Wallpapers.qml
     cp ${./pages/WifiPage.qml} $out/pages/WifiPage.qml
     cp ${./pages/BluetoothPage.qml} $out/pages/BluetoothPage.qml
+    cp ${./pages/AudioPage.qml} $out/pages/AudioPage.qml
     cp ${./pages/DisplayPage.qml} $out/pages/DisplayPage.qml
     cp ${./pages/WallpaperPage.qml} $out/pages/WallpaperPage.qml
+    cp ${./components/FrequencyModal.qml} $out/components/FrequencyModal.qml
+    cp ${./services/AudioService.qml} $out/services/AudioService.qml
   '';
 in
 {
@@ -134,11 +137,16 @@ in
     # on its own instead of the settings app staying dead until a full
     # Hyprland restart (SUPER+M).
     systemd.user.services.quickshell-settings = {
-      Unit.Description = "Quickshell settings app (Wi-Fi/Bluetooth/Display/Wallpaper)";
+      Unit.Description = "Quickshell settings app (Wi-Fi/Bluetooth/Son/Écran/Fond d'écran)";
+      Unit = {
+        After = [ "graphical-session.target" ];
+        Wants = [ "graphical-session.target" ];
+      };
       Service = {
         ExecStart = "${pkgs.quickshell}/bin/quickshell -p ${quickshellSrc}";
         Restart = "on-failure";
-        RestartSec = 1;
+        RestartSec = 3;
+        StartLimitIntervalSec = 0;
       };
     };
 

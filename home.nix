@@ -13,6 +13,7 @@
     ./modules/home/walker
     ./modules/home/rofi
     ./modules/home/quickshell
+    ./modules/home/quickshell/power
     ./modules/home/nvim
     ./modules/home/zen.nix
     ./modules/home/apps.nix

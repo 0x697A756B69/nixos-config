@@ -34,6 +34,7 @@ PanelWindow {
     readonly property var tabs: [
         { id: "wifi", label: "Wi-Fi", icon: "󰖩" },
         { id: "bluetooth", label: "Bluetooth", icon: "󰂯" },
+        { id: "audio", label: "Son", icon: "󰕾" },
         { id: "display", label: "Écran", icon: "󰍹" },
         { id: "wallpaper", label: "Fond d'écran", icon: "󰸉" }
     ]
@@ -166,6 +167,10 @@ PanelWindow {
                 BluetoothPage {
                     anchors.fill: parent
                     visible: root.currentTab === "bluetooth"
+                }
+                AudioPage {
+                    anchors.fill: parent
+                    visible: root.currentTab === "audio"
                 }
                 DisplayPage {
                     id: displayPage

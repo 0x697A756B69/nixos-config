@@ -78,6 +78,7 @@ in
               hl.exec_cmd("wb-wsd")
               hl.exec_cmd("waybar")
               hl.exec_cmd("wb-dropdown")
+              hl.exec_cmd("wb-power")
             end
           '')
         ];

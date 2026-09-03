@@ -131,7 +131,9 @@ pkill -RTMIN+1 waybar''}";
         };
         "custom/power" = {
           format = "⏻";
-          on-click = "power-menu";
+          # Ouvre le power menu Quickshell (shell dédiée, layer-shell overlay)
+          # au lieu du menu rofi legacy.
+          on-click = "wb-power-toggle";
           tooltip = false;
         };
         "network#wifi" = {
@@ -386,18 +388,6 @@ pkill -RTMIN+1 waybar''}";
       #!/usr/bin/env bash
       f="$HOME/.cache/ws$1"
       if [ -f "$f" ]; then cat "$f"; else printf '{"text":"●","class":"inactive"}\n'; fi
-    '')
-    (pkgs.writeShellScriptBin "power-menu" ''
-      #!/usr/bin/env bash
-      options=$'⏻ Éteindre\n󰜉 Redémarrer\n󰒲 Veille\n Verrouiller\n󰗼 Quitter Hyprland'
-      choice=$(printf '%s' "$options" | rofi -dmenu -p "Power" -theme "$HOME/.config/rofi/power.rasi" 2>/dev/null)
-      case "$choice" in
-        *"Éteindre") systemctl poweroff ;;
-        *"Redémarrer") systemctl reboot ;;
-        *"Veille") systemctl suspend ;;
-        *"Verrouiller") hyprlock ;;
-        *"Quitter") hyprctl dispatch exit ;;
-      esac
     '')
   ];
 }
