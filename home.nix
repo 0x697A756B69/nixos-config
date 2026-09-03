@@ -9,6 +9,7 @@
     ./modules/home/hyprland
     ./modules/home/waybar
     ./modules/home/theming/matugen
+    ./modules/home/theming/gtk.nix
     ./modules/home/kitty
     ./modules/home/walker
     ./modules/home/rofi
