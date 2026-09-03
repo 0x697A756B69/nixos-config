@@ -2,10 +2,13 @@ import sys, struct, threading, time, subprocess, json, os
 import fcntl
 import select
 import math
+import socket
+import random
 from evdev import InputDevice, list_devices, ecodes
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from hypr_ipc import move_window_exact_lua, batch_async
+from hypr_ipc import (move_window_exact_lua, resize_window_exact_lua,
+                      set_floating_lua, focus_window_lua, batch_async)
 
 #ruta deseada /home/usuario/scripts/
 
@@ -103,6 +106,181 @@ def get_floating_windows(workspace_id):
         return floating
     except:
         return []
+
+
+# ---- Modo flotante: nuevas ventanas se abren flotando ----
+
+MODE_FILE = "/tmp/floating_mode.json"
+OPENWINDOW_WAIT = 0.45  # segundos antes de colocar la nueva ventana
+FLOAT_OFFSET = 34        # desplazamiento aleatorio máximo respecto a otra ventana
+OPENWINDOW_GAP = 40      # espacio (px) entre la nueva ventana y las existentes
+
+def load_floating_mode():
+    try:
+        with open(MODE_FILE) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def is_floating_mode():
+    mode = load_floating_mode()
+    return bool(mode.get("active"))
+
+
+def normalize_addr(addr):
+    """Les eventos openwindow devuelven la dirección sin prefijo `0x`,
+    mientras que `hyprctl clients -j` la entrega con `0x`. Normaliza."""
+    addr = addr.strip()
+    if addr and not addr.lower().startswith("0x"):
+        return "0x" + addr
+    return addr
+
+
+def get_all_windows(workspace_id):
+    try:
+        r = subprocess.run(['hyprctl', 'clients', '-j'], capture_output=True, text=True, timeout=0.1)
+        clients = json.loads(r.stdout)
+        return [w for w in clients if w.get('workspace', {}).get('id') == workspace_id]
+    except Exception:
+        return []
+
+
+def random_nearby_position(workspace_id, new_window, monitor):
+    """Devuelve (x, y) para la nueva ventana flotante, colocada a un lado de
+    otra ventana existente (con espacio entre ambas), no superpuesta."""
+    others = [w for w in get_all_windows(workspace_id) if w.get('address') != new_window.get('address')]
+    nw, nh = new_window.get('size', [800, 600])
+    gap = OPENWINDOW_GAP
+
+    if not others:
+        cx = (monitor['right'] - monitor['left']) // 2 + monitor['left']
+        cy = (monitor['bottom'] - monitor['top']) // 2 + monitor['top']
+        x = cx - nw // 2 + random.randint(-FLOAT_OFFSET, FLOAT_OFFSET)
+        y = cy - nh // 2 + random.randint(-FLOAT_OFFSET, FLOAT_OFFSET)
+        return clamp_position(x, y, nw, nh, monitor)
+
+    # Preferir la ventana enfocada / la más reciente (más relevante visualmente)
+    focused = get_focused_window()
+    base = None
+    if focused and focused.get('floating') and \
+       any(w.get('address') == focused.get('address') for w in others):
+        base = focused
+    if base is None:
+        base = others[0]
+
+    bx, by = base['at'][0], base['at'][1]
+    bw, bh = base['size'][0], base['size'][1]
+
+    # Intentar a la derecha: base.right + gap .. base.right + gap + nw
+    cand = [
+        (bx + bw + gap, by + random.randint(-FLOAT_OFFSET, FLOAT_OFFSET)),
+        (bx - nw - gap, by + random.randint(-FLOAT_OFFSET, FLOAT_OFFSET)),
+        (bx + random.randint(-FLOAT_OFFSET, FLOAT_OFFSET), by + bh + gap),
+        (bx + random.randint(-FLOAT_OFFSET, FLOAT_OFFSET), by - nh - gap),
+    ]
+    for (x, y) in cand:
+        if fits_in_monitor(x, y, nw, nh, monitor):
+            return clamp_position(x, y, nw, nh, monitor)
+
+    # Si nada cabe, cascada simple con un offset acumulado
+    x = bx + bw // 2 - nw // 2 + random.randint(-FLOAT_OFFSET, FLOAT_OFFSET)
+    y = by + bh // 2 - nh // 2 + random.randint(-FLOAT_OFFSET, FLOAT_OFFSET)
+    return clamp_position(x, y, nw, nh, monitor)
+
+
+def fits_in_monitor(x, y, w, h, monitor):
+    return (x >= monitor['left'] and y >= monitor['top']
+            and x + w <= monitor['right'] and y + h <= monitor['bottom'])
+
+
+def clamp_position(x, y, w, h, monitor):
+    x = max(monitor['left'], min(x, monitor['right'] - w))
+    y = max(monitor['top'], min(y, monitor['bottom'] - h))
+    return int(x), int(y)
+
+
+def handle_new_window(workspace_id, address, monitor):
+    """Fuerza flotante y coloca la nueva ventana cerca de las existentes."""
+    address = normalize_addr(address)
+    time.sleep(OPENWINDOW_WAIT)
+    try:
+        clients = hyprctl_json_clients()
+        win = next((w for w in clients if w.get('address') == address), None)
+        if not win:
+            return
+        if not is_floating_mode():
+            return
+        if win.get('workspace', {}).get('id') != workspace_id:
+            workspace_id = win['workspace'].get('id', workspace_id)
+        if is_protected_app(win):
+            return
+        x, y = random_nearby_position(workspace_id, win, monitor)
+        exprs = []
+        if not win.get('floating'):
+            exprs.append(set_floating_lua(address, True))
+        exprs.append(move_window_exact_lua(x, y, address))
+        exprs.append(focus_window_lua(address))
+        # Un solo batch: garantiza orden (flotar -> mover -> enfocar) y
+        # que el foco siga a la app recién lanzada.
+        batch_async(exprs)
+    except Exception:
+        pass
+
+
+def hyprctl_json_clients():
+    try:
+        r = subprocess.run(['hyprctl', 'clients', '-j'], capture_output=True, text=True, timeout=0.1)
+        return json.loads(r.stdout)
+    except Exception:
+        return []
+
+
+def workspace_events_listener():
+    """Hilo que escucha el socket de eventos de Hyprland y detecta nuevas
+    ventanas (openwindow). Cuando el modo flotante está activo, coloca la
+    nueva ventana flotando cerca de las existentes."""
+    try:
+        sig = os.environ.get('HYPRLAND_INSTANCE_SIGNATURE')
+        sock_path = f"/run/user/{os.getuid()}/hypr/{sig}/.socket2.sock"
+        sock = socket.socket(socket.AF_UNIX)
+        sock.connect(sock_path)
+    except Exception:
+        print("Floating-mode: no se pudo conectar al socket de eventos", flush=True)
+        return
+
+    sock.settimeout(0.5)
+    buf = b""
+    while True:
+        try:
+            data = sock.recv(4096)
+            if not data:
+                break
+            buf += data
+            while b"\n" in buf:
+                line, _, buf = buf.partition(b"\n")
+                line = line.decode(errors="replace").strip()
+                if not line:
+                    continue
+                event, _, rest = line.partition(">>")
+                if event == "openwindow":
+                    parts = [p.strip() for p in rest.split(",")]
+                    address = parts[0] if parts else ""
+                    title = parts[1] if len(parts) > 1 else ""
+                    windows = hyprctl_json_clients()
+                    mon = get_monitor_bounds()
+                    threading.Thread(
+                        target=handle_new_window,
+                        args=(get_cached_workspace_id(), address, mon),
+                        daemon=True,
+                    ).start()
+        except socket.timeout:
+            continue
+        except Exception:
+            break
+    try:
+        sock.close()
+    except Exception:
+        pass
 
 def get_focused_window():
     try:
@@ -478,6 +656,7 @@ except:
 
 threading.Thread(target=device_manager, daemon=True).start()
 threading.Thread(target=monitor_window_drag, daemon=True).start()
+threading.Thread(target=workspace_events_listener, daemon=True).start()
 print("Infinite Desktop activo (deteccion automatica de dispositivos)", flush=True)
 print("Super+click: Arrastrar ventana (al tocar borde, el raton mueve el resto)", flush=True)
 print("Super+Alt+mouse: Arrastrar todo el escritorio", flush=True)

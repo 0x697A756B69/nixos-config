@@ -6,6 +6,7 @@ import json
 import sys
 import os
 import fcntl
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from hypr_ipc import (hyprctl_json, toggle_floating_lua, move_window_exact_lua,
@@ -13,6 +14,30 @@ from hypr_ipc import (hyprctl_json, toggle_floating_lua, move_window_exact_lua,
 
 LOCK_FILE  = "/tmp/floating_tile_toggle.lock"
 STATE_FILE = "/tmp/floating_tile_state.json"
+MODE_FILE  = "/tmp/floating_mode.json"
+
+
+def load_floating_mode():
+    try:
+        with open(MODE_FILE) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def save_floating_mode(state):
+    with open(MODE_FILE, "w") as f:
+        json.dump(state, f)
+
+def set_floating_mode(active, workspace_id=None):
+    state = load_floating_mode()
+    if active and workspace_id is not None:
+        state["active"] = True
+        state["workspace_id"] = workspace_id
+        state["time"] = int(time.time())
+    elif not active:
+        state["active"] = False
+        state["workspace_id"] = None
+    save_floating_mode(state)
 
 
 
@@ -80,6 +105,9 @@ def tile_floating_windows(workspace_id):
 
     exprs = [toggle_floating_lua(addr) for addr in positions]
     batch(exprs, timeout=5)
+
+    # Se sale del modo flotante: nuevas ventanas volverán a ser tileadas.
+    set_floating_mode(False)
 
     return True
 
@@ -153,6 +181,9 @@ def float_all_tiled(workspace_id):
     print(f"Poniendo {len(tiled)} ventanas en flotante...")
     exprs = [toggle_floating_lua(w["address"]) for w in tiled]
     batch(exprs, timeout=5)
+
+    # Activa el "modo flotante": nuevas ventanas se abrirán flotando.
+    set_floating_mode(True, workspace_id)
 
     return True
 

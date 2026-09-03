@@ -51,6 +51,14 @@ def toggle_floating(address=None):
     return dispatch(toggle_floating_lua(address))
 
 
+def set_floating_lua(address, floating=True):
+    action = "enable" if floating else "disable"
+    return f'hl.dsp.window.float({{ action = "{action}", window = "address:{address}" }})'
+
+def set_floating(address, floating=True):
+    return dispatch(set_floating_lua(address, floating))
+
+
 def focus_window_lua(address):
     return f'hl.dsp.focus({{ window = "address:{address}" }})'
 
