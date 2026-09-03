@@ -31,6 +31,7 @@
         profile="${config.home.homeDirectory}/.zen"
         ini="${config.home.homeDirectory}/.config/zen/profiles.ini"
         mkdir -p "$profile"
+        mkdir -p "$(dirname "$ini")"
         if ! grep -q "^Path=$profile" "$ini" 2>/dev/null; then
           cat > "$ini" <<EOF
 [General]
