@@ -4,21 +4,41 @@ import Quickshell
 import Quickshell.Io
 import "../"
 
-// Same data source as wb-bt (bluetoothctl): no native Quickshell.Bluetooth
-// here, its plugin isn't compiled in this nixpkgs build (see plan doc).
 Item {
     id: root
 
     property bool btEnabled: false
+    property bool scanning: false
     property var devices: []
     property var _paired: ({})
-    property var _discoverable: []
+    property var _connected: ({})
+    property var _discovered: ({})
 
-    // bluetoothctl failures (bluetoothd down, etc.) otherwise show up as a
-    // silently empty list with no indication anything went wrong.
-    function reportError(label, text) {
+    function reportError(text) {
         if (!text.trim().length) return
-        Quickshell.execDetached(["notify-send", "-u", "critical", "-t", "4000", label, text.trim()])
+        Quickshell.execDetached(["notify-send", "-u", "critical", "-t", "4000", "Bluetooth", text.trim()])
+    }
+
+    // Merge paired + connected + discovered into one display list.
+    function rebuild() {
+        const merged = {}
+        for (const mac in root._paired) {
+            merged[mac] = { mac: mac, name: root._paired[mac], paired: true, connected: !!root._connected[mac], discovered: false }
+        }
+        for (const mac in root._discovered) {
+            if (merged[mac]) {
+                merged[mac].name = root._discovered[mac] || merged[mac].name
+            } else {
+                merged[mac] = { mac: mac, name: root._discovered[mac] || mac, paired: false, connected: !!root._connected[mac], discovered: true }
+            }
+        }
+        const list = Object.values(merged)
+        list.sort((a, b) =>
+            (b.connected - a.connected) ||
+            (b.paired - a.paired) ||
+            (b.discovered - a.discovered) ||
+            a.name.localeCompare(b.name))
+        root.devices = list
     }
 
     function refresh() {
@@ -26,6 +46,8 @@ Item {
         powerProc.running = true
         pairedProc.running = false
         pairedProc.running = true
+        connectedProc.running = false
+        connectedProc.running = true
     }
 
     Component.onCompleted: refresh()
@@ -36,16 +58,13 @@ Item {
         stdout: StdioCollector {
             onStreamFinished: root.btEnabled = text.includes("Powered: yes")
         }
-        stderr: StdioCollector {
-            onStreamFinished: root.reportError("Bluetooth", text)
-        }
+        stderr: StdioCollector { onStreamFinished: root.reportError(text) }
     }
 
     Process {
         id: toggleProc
     }
     function setEnabled(on) {
-        if (toggleProc.running) return
         toggleProc.exec(["bluetoothctl", "power", on ? "on" : "off"])
         refreshTimer.restart()
     }
@@ -61,21 +80,18 @@ Item {
         command: ["bluetoothctl", "devices", "Paired"]
         stdout: StdioCollector {
             onStreamFinished: {
-                const paired = {}
+                const p = {}
                 if (text.trim().length) {
                     for (const line of text.trim().split("\n")) {
                         const m = line.match(/^Device ([0-9A-Fa-f:]+) (.*)$/)
-                        if (m) paired[m[1]] = m[2]
+                        if (m) p[m[1]] = m[2]
                     }
                 }
-                root._paired = paired
-                connectedProc.running = false
-                connectedProc.running = true
+                root._paired = p
+                root.rebuild()
             }
         }
-        stderr: StdioCollector {
-            onStreamFinished: root.reportError("Bluetooth", text)
-        }
+        stderr: StdioCollector { onStreamFinished: root.reportError(text) }
     }
 
     Process {
@@ -83,24 +99,56 @@ Item {
         command: ["bluetoothctl", "devices", "Connected"]
         stdout: StdioCollector {
             onStreamFinished: {
-                const connected = new Set()
+                const c = {}
                 if (text.trim().length) {
                     for (const line of text.trim().split("\n")) {
-                        const m = line.match(/^Device ([0-9A-Fa-f:]+)/)
-                        if (m) connected.add(m[1])
+                        const m = line.match(/^Device ([0-9A-Fa-f:]+) (.*)$/)
+                        if (m) c[m[1]] = m[2]
                     }
                 }
-                const list = []
-                for (const mac in root._paired) {
-                    list.push({ mac, name: root._paired[mac], connected: connected.has(mac) })
-                }
-                list.sort((a, b) => (b.connected - a.connected) || a.name.localeCompare(b.name))
-                root.devices = list
+                root._connected = c
+                root.rebuild()
             }
         }
-        stderr: StdioCollector {
-            onStreamFinished: root.reportError("Bluetooth", text)
+        stderr: StdioCollector { onStreamFinished: root.reportError(text) }
+    }
+
+    // Scan with a timeout so bluetoothctl exits on its own (without --timeout
+    // it never emits NEW Device lines when stdout isn't a TTY). All lines are
+    // collected and parsed in onStreamFinished.
+    Process {
+        id: scanProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const d = root._discovered
+                for (const line of text.split("\n")) {
+                    const m = line.match(/\[NEW\] Device ([0-9A-Fa-f:]+)\s*(.*)$/)
+                    if (!m) continue
+                    const mac = m[1].toUpperCase()
+                    const name = (m[2] || "").trim()
+                    if (name && !(mac in d)) d[mac] = name
+                    else if (!(mac in d)) d[mac] = mac
+                }
+                root._discovered = d
+                root.scanning = false
+                root.rebuild()
+            }
         }
+        onExited: { root.scanning = false; root.refresh() }
+    }
+    function startScan() {
+        root.scanning = true
+        root._discovered = {}
+        scanProc.exec(["bluetoothctl", "--timeout", "6", "scan", "on"])
+    }
+    function stopScan() {
+        root.scanning = false
+        scanProc.kill()
+        toggleScanProc.exec(["bluetoothctl", "scan", "off"])
+    }
+
+    Process {
+        id: toggleScanProc
     }
 
     Process {
@@ -108,22 +156,17 @@ Item {
     }
     function toggleConnect(dev) {
         if (connectProc.running) return
-        connectProc.exec(["bluetoothctl", dev.connected ? "disconnect" : "connect", dev.mac])
+        if (dev.connected) {
+            connectProc.exec(["bluetoothctl", "disconnect", dev.mac])
+        } else if (dev.paired) {
+            connectProc.exec(["bluetoothctl", "connect", dev.mac])
+        } else {
+            connectProc.exec(["bluetoothctl", "pair", dev.mac])
+        }
         refreshTimer.restart()
     }
 
-    // One-shot timed scan (bluetoothctl blocks for the given duration then exits).
-    Process {
-        id: scanProc
-        command: ["bluetoothctl", "--timeout", "4", "scan", "on"]
-        onExited: root.refresh()
-    }
-    function scan() {
-        scanProc.running = false
-        scanProc.running = true
-    }
-
-    // Reconnect all paired devices (same logic as wb-bt toggle).
+    // Reconnect all paired devices.
     Process {
         id: reconnectProc
         command: ["sh", "-c",
@@ -146,7 +189,7 @@ Item {
 
         SettingRow {
             icon: "󰂯"
-            label: "Appareil"
+            label: "Bluetooth"
             IconToggle {
                 active: root.btEnabled
                 onIcon: "󰂯"
@@ -156,10 +199,10 @@ Item {
             }
         }
         SettingRow {
-            icon: ""
-            label: "Rechercher des appareils"
+            icon: root.scanning ? "󰂯" : "󰂰"
+            label: root.scanning ? "Recherche en cours…" : "Rechercher des appareils"
             clickable: true
-            onClicked: root.scan()
+            onClicked: root.scanning ? root.stopScan() : root.startScan()
         }
         SettingRow {
             icon: "󰁻"
@@ -183,43 +226,53 @@ Item {
                 id: devDelegate
                 required property var modelData
                 width: ListView.view.width
-                height: 40
+                height: 46
 
                 Rectangle {
                     anchors.fill: parent
-                    color: devMouse.containsMouse ? Colors.baseGlassColor : "transparent"
+                    anchors.margins: 2
+                    radius: 10
+                    color: devMouse.containsMouse || devDelegate.modelData.connected
+                        ? Colors.baseGlassColor : "transparent"
                 }
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 4
-                    anchors.rightMargin: 4
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 12
                     spacing: 10
 
                     Text {
-                        text: "󰂯"
-                        font.pixelSize: 15
-                        color: Colors.c.text_alt
+                        text: devDelegate.modelData.connected ? "󰂯"
+                              : (devDelegate.modelData.paired ? "󰂲" : "󰂰")
+                        font.pixelSize: 16
+                        color: devDelegate.modelData.connected ? Colors.c.accent : Colors.c.text_alt
                     }
-                    Text {
-                        text: devDelegate.modelData.name
-                        color: Colors.c.text
-                        Layout.fillWidth: true
-                        elide: Text.ElideRight
-                    }
-                    Text {
-                        text: devDelegate.modelData.connected ? "Connecté" : "Appairé"
-                        color: Colors.c.text_alt
-                    }
-                }
 
-                Rectangle {
-                    anchors.bottom: parent.bottom
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: 1
-                    color: Colors.c.border
-                    opacity: 0.25
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
+                        Text {
+                            text: devDelegate.modelData.name || devDelegate.modelData.mac
+                            Layout.fillWidth: true
+                            font.pixelSize: 13
+                            color: Colors.c.text
+                            elide: Text.ElideRight
+                        }
+                        Text {
+                            text: devDelegate.modelData.connected ? "Connecté"
+                                  : (devDelegate.modelData.paired ? "Appairé" : "À proximité")
+                            font.pixelSize: 10
+                            color: devDelegate.modelData.connected ? Colors.c.accent : Colors.c.text_alt
+                        }
+                    }
+
+                    Text {
+                        text: devDelegate.modelData.connected ? "Déconnecter"
+                              : (devDelegate.modelData.paired ? "Connecter" : "Appairer")
+                        font.pixelSize: 11
+                        color: Colors.c.accent
+                    }
                 }
 
                 MouseArea {
@@ -230,6 +283,16 @@ Item {
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: root.toggleConnect(devDelegate.modelData)
                 }
+            }
+
+            Text {
+                anchors.centerIn: parent
+                visible: root.devices.length === 0
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                text: root.scanning ? "Recherche d'appareils…" : "Aucun appareil"
+                font.pixelSize: 12
+                color: Colors.c.text_alt
             }
         }
     }
