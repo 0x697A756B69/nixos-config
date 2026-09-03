@@ -14,7 +14,7 @@ Item {
     signal clicked()
 
     Layout.fillWidth: true
-    implicitHeight: 44
+    implicitHeight: 38
 
     MouseArea {
         anchors.fill: parent

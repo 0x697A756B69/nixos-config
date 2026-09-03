@@ -5,82 +5,16 @@ import Quickshell.Io
 import "../"
 import "../services"
 
-// Audio output device selection + master volume. Backend: AudioService
-// (WirePlumber), which lists every sink and lets the user pick the default.
-// Volume uses pamixer so the master slider and waybar's pulseaudio module
-// (both pamixer) stay in sync.
+// Audio page: master volume + mute for the default sink, then a list of
+// every output (sink) and input (source) device, each with its own volume
+// slider and the ability to set it as default. Backend: AudioService (wpctl).
 Item {
     id: root
 
-    property bool pamixerMuted: false
-    property real masterVolume: 1
-
-    Component.onCompleted: {
-        AudioService.refresh()
-        mutedCheck.running = true
-        volCheck.running = true
-    }
-
-    function setVolume(x, width) {
-        if (width <= 0) return
-        const v = Math.max(0, Math.min(1, x / width))
-        root.masterVolume = v
-        pamixerExec.exec(["pamixer", "--set-volume", String(Math.round(v * 100))])
-        // waybar pulseaudio will pick the change up itself via PA events.
-    }
-
-    Process {
-        id: mutedCheck
-        command: ["pamixer", "--get-mute"]
-        stdout: StdioCollector {
-            onStreamFinished: root.pamixerMuted = text.trim() === "true"
-        }
-    }
-
-    Process {
-        id: volCheck
-        command: ["pamixer", "--get-volume"]
-        stdout: StdioCollector {
-            onStreamFinished: root.masterVolume = (parseInt(text) || 0) / 100
-        }
-    }
-
-    Process {
-        id: pamixerExec
-    }
-
-    Component {
-        id: volumeSlider
-        Item {
-            implicitWidth: 220
-            implicitHeight: 28
-
-            Rectangle {
-                id: volTrack
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: 4
-                radius: 2
-                color: Colors.c.base_alt
-
-                Rectangle {
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width * root.masterVolume
-                    height: parent.height
-                    radius: 2
-                    color: Colors.c.accent
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onPressed: (mouse) => root.setVolume(mouse.x, width)
-                onPositionChanged: if (pressed) root.setVolume(mouse.x, width)
-            }
-        }
+    // Shared generic slider used for the master volume.
+    Item {
+        id: masterSliderHost
+        visible: false
     }
 
     ColumnLayout {
@@ -96,7 +30,7 @@ Item {
             Layout.bottomMargin: 8
         }
 
-        // --- Master volume sliders ---
+        // --- Master volume ---
         Text {
             text: "Volume"
             font.pixelSize: 12
@@ -105,118 +39,260 @@ Item {
             Layout.bottomMargin: 2
         }
 
-        Loader {
-            sourceComponent: volumeSlider
+        RowLayout {
             Layout.fillWidth: true
-        }
+            Layout.topMargin: 2
+            Layout.bottomMargin: 6
+            spacing: 10
 
-        SettingRow {
-            icon: "󰝟"
-            label: "Muet"
-            IconToggle {
-                active: root.pamixerMuted
-                onIcon: "󰝟"
-                offIcon: "󰕾"
-                tooltip: "Activer/désactiver le son"
-                onToggled: {
-                    pamixerExec.exec(["pamixer", "-t"])
-                    refreshTimer.restart()
+            Text {
+                text: AudioService.masterMuted ? "󰝟" : "󰕾"
+                font.pixelSize: 17
+                color: AudioService.masterMuted ? Colors.c.error : Colors.c.accent
+            }
+
+            Item {
+                Layout.fillWidth: true
+                height: 24
+
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: 5
+                    radius: 2.5
+                    color: Colors.c.base_alt
+                    Rectangle {
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width * Math.max(0, Math.min(1, AudioService.masterVolume))
+                        height: parent.height
+                        radius: 2.5
+                        color: Colors.c.accent
+                    }
                 }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onPressed: (mouse) => setMaster(mouse.x, width)
+                    onPositionChanged: if (pressed) setMaster(mouse.x, width)
+                }
+
+                function setMaster(x, w) {
+                    if (w <= 0) return
+                    const v = Math.max(0, Math.min(1, x / w))
+                    AudioService.setSinkVolume(AudioService.defaultSinkDeviceId, v)
+                }
+            }
+
+            Text {
+                text: Math.round(AudioService.masterVolume * 100) + "%"
+                font.pixelSize: 12
+                color: Colors.c.text_alt
+                Layout.preferredWidth: 42
+                horizontalAlignment: Text.AlignRight
             }
         }
 
+        // --- Output devices ---
         Text {
             text: "Sortie"
             font.bold: true
             font.pixelSize: 12
             color: Colors.c.text_alt
             Layout.fillWidth: true
-            Layout.topMargin: 12
-            Layout.bottomMargin: 4
+            Layout.topMargin: 6
+            Layout.bottomMargin: 2
         }
 
-        // --- Sink list (devices) ---
         ListView {
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            implicitHeight: Math.min(contentHeight, 250)
             clip: true
-            spacing: 0
+            spacing: 2
             model: AudioService.sinks
 
             delegate: Item {
-                id: sinkDelegate
+                id: sDel
                 required property var modelData
-                property bool isDefault: modelData.name === AudioService.defaultSinkId
-
+                property bool isDefault: modelData.default
                 width: ListView.view.width
-                height: 44
+                height: 58
 
                 Rectangle {
                     anchors.fill: parent
-                    anchors.margins: 2
+                    anchors.margins: 1
                     radius: 10
-                    color: sinkMouse.containsMouse || sinkDelegate.isDefault
+                    color: rowMouse.containsMouse || sDel.isDefault
                         ? Colors.baseGlassColor : "transparent"
+                    Behavior on color { ColorAnimation { duration: 120 } }
+                }
 
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 10
+                    anchors.rightMargin: 10
+                    anchors.topMargin: 6
+                    anchors.bottomMargin: 5
+                    spacing: 4
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Text {
+                            text: sDel.isDefault ? "󰓃" : "󰓄"
+                            font.pixelSize: 14
+                            color: sDel.isDefault ? Colors.c.accent : Colors.c.text_alt
+                        }
+                        Text {
+                            text: AudioService.describe(sDel.modelData.name)
+                            Layout.fillWidth: true
+                            font.pixelSize: 12
+                            color: Colors.c.text
+                            elide: Text.ElideRight
+                        }
+                        Rectangle {
+                            visible: sDel.isDefault
+                            width: 46
+                            height: 18
+                            radius: 9
+                            color: Colors.c.accent
+                            Text {
+                                anchors.centerIn: parent
+                                text: "défaut"
+                                font.pixelSize: 9
+                                color: Colors.c.on_accent
+                            }
+                        }
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                        height: 20
+
+                        Rectangle {
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            height: 4
+                            radius: 2
+                            color: Colors.c.base_alt
+                            Rectangle {
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: parent.width * Math.max(0, Math.min(1, AudioService.volumes[sDel.modelData.id] || 0))
+                                height: parent.height
+                                radius: 2
+                                color: Colors.c.accent
+                            }
+                        }
+
+                        MouseArea {
+                            id: rowMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onPressed: (mouse) => setVol(mouse.x, width)
+                            onPositionChanged: if (pressed) setVol(mouse.x, width)
+                            onClicked: if (!sDel.isDefault) AudioService.setDefaultSink(sDel.modelData.id)
+                        }
+
+                        function setVol(x, w) {
+                            if (w <= 0) return
+                            const v = Math.max(0, Math.min(1, x / w))
+                            AudioService.setSinkVolume(sDel.modelData.id, v)
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- Input devices ---
+        Text {
+            text: "Entrée"
+            font.bold: true
+            font.pixelSize: 12
+            color: Colors.c.text_alt
+            Layout.fillWidth: true
+            Layout.topMargin: 6
+            Layout.bottomMargin: 2
+        }
+
+        ListView {
+            Layout.fillWidth: true
+            implicitHeight: Math.min(contentHeight, 190)
+            clip: true
+            spacing: 2
+            model: AudioService.sources
+
+            delegate: Item {
+                id: srcDel
+                required property var modelData
+                property bool isDefault: modelData.default
+                width: ListView.view.width
+                height: 50
+
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.margins: 1
+                    radius: 10
+                    color: srcRowMouse.containsMouse || srcDel.isDefault
+                        ? Colors.baseGlassColor : "transparent"
                     Behavior on color { ColorAnimation { duration: 120 } }
                 }
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    spacing: 10
+                    anchors.leftMargin: 10
+                    anchors.rightMargin: 10
+                    spacing: 8
 
                     Text {
-                        text: sinkDelegate.isDefault ? "󰓃" : "󰓄"
-                        font.pixelSize: 15
-                        color: sinkDelegate.isDefault ? Colors.c.accent : Colors.c.text_alt
+                        text: srcDel.isDefault ? "󰎙" : "󰍬"
+                        font.pixelSize: 14
+                        color: srcDel.isDefault ? Colors.c.accent : Colors.c.text_alt
                     }
-
                     Text {
-                        text: AudioService.describe(sinkDelegate.modelData.name)
+                        text: AudioService.describe(srcDel.modelData.name)
                         Layout.fillWidth: true
-                        font.pixelSize: 13
+                        font.pixelSize: 12
                         color: Colors.c.text
                         elide: Text.ElideRight
                     }
-
                     Rectangle {
-                        visible: sinkDelegate.isDefault
-                        width: 52
-                        height: 20
-                        radius: 10
+                        visible: srcDel.isDefault
+                        width: 46
+                        height: 18
+                        radius: 9
                         color: Colors.c.accent
                         Text {
                             anchors.centerIn: parent
                             text: "défaut"
-                            font.pixelSize: 10
+                            font.pixelSize: 9
                             color: Colors.c.on_accent
                         }
                     }
                 }
 
                 MouseArea {
-                    id: sinkMouse
+                    id: srcRowMouse
                     anchors.fill: parent
                     hoverEnabled: true
-                    enabled: !sinkDelegate.isDefault
-                    cursorShape: sinkDelegate.isDefault ? Qt.ArrowCursor : Qt.PointingHandCursor
-                    onClicked: AudioService.setDefaultSink(sinkDelegate.modelData.id)
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: if (!srcDel.isDefault) AudioService.setDefaultSource(srcDel.modelData.id)
                 }
             }
         }
-    }
 
-    Timer {
-        id: refreshTimer
-        interval: 400
-        onTriggered: {
-            AudioService.refresh()
-            mutedCheck.running = false
-            mutedCheck.running = true
-            volCheck.running = false
-            volCheck.running = true
+        Item {
+            Layout.fillHeight: true
         }
     }
+
+    onVisibleChanged: {
+        if (visible) AudioService.refresh()
+    }
+
+    Component.onCompleted: AudioService.refresh()
 }
