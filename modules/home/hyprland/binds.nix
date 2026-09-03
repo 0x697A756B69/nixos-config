@@ -52,6 +52,9 @@
   { _args = [ "${mainMod} + CTRL + up"    (inline "hl.dsp.exec_cmd(\"resize_window up\")")    { repeating = true; } ]; }
   { _args = [ "${mainMod} + CTRL + down"  (inline "hl.dsp.exec_cmd(\"resize_window down\")")  { repeating = true; } ]; }
 
+  # --- Workspace overview (hyprspace) ---
+  { _args = [ "${mainMod} + TAB" (inline "hl.dsp.exec_cmd(\"hyprctl dispatch overview:toggle\")") ]; }
+
   # --- Wallpaper: restart with the current/persisted choice ---
   { _args = [ "${mainMod} + B" (inline "hl.dsp.exec_cmd(\"wb-wallpaper\")") ]; }
   # --- Wallpaper: open the picker tab in the settings app ---

@@ -18,6 +18,12 @@ in
     configType = "lua";
     package = pkgs.hyprland;
 
+    # Built against this same nixpkgs' hyprland, no hyprpm involved.
+    plugins = with pkgs.hyprlandPlugins; [
+      hypr-dynamic-cursors
+      hyprspace
+    ];
+
     settings = {
       monitor = {
         output = "";
@@ -62,6 +68,13 @@ in
         };
         input = {
           kb_layout = "fr";
+        };
+
+        plugin = {
+          dynamic_cursors = {
+            enabled = true;
+            mode = "tilt";
+          };
         };
       };
 
