@@ -204,6 +204,14 @@ EOF
 EOF
     grep -q -- '--background-primary' "$outdir/vesktop.theme.css"
 
+    # GTK3/4 accent override (adw-gtk3 + libadwaita both read these named colors)
+    ${pkgs.jq}/bin/jq -r '
+      "@define-color accent_color " + .colors.primary.dark.color + ";",
+      "@define-color accent_bg_color " + .colors.primary.dark.color + ";",
+      "@define-color accent_fg_color " + .colors.on_primary.dark.color + ";"
+    ' "$palette" > "$outdir/gtk-accent.css"
+    grep -q 'accent_color' "$outdir/gtk-accent.css"
+
     # Propagate to already-running apps that don't watch the palette dir
     # themselves (Quickshell/walker/rofi do, by reading fresh at each launch
     # or via FileView watchChanges — waybar needs an explicit kick).
