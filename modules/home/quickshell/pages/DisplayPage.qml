@@ -176,5 +176,12 @@ Item {
                 color: Colors.c.text_alt
             }
         }
+
+        // Absorbe l'espace restant en bas : garde les lignes serrées en haut
+        // au lieu de laisser ColumnLayout les étaler sur toute la hauteur.
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+        }
     }
 }
