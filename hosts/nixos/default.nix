@@ -16,6 +16,7 @@
     ../../modules/system/spicetify.nix
     ../../modules/system/misc-programs.nix
     ../../modules/system/system-packages.nix
+    ../../modules/system/performance.nix
   ];
 
   # Bootloader

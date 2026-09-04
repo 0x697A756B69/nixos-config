@@ -16,5 +16,7 @@
   btop
   claude-code
   sbctl
+  cudaPackages.cudatoolkit
+  nvtopPackages.full
   ];
 }
