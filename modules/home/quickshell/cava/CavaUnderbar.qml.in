@@ -1,0 +1,61 @@
+import QtQuick
+import Quickshell
+import Quickshell.Io
+import Quickshell.Wayland
+import ".."
+
+// Cava "underbar": a thin strip of audio-reactive bars sitting in the
+// outer gap right below Waybar (not overlapping it, so there is no
+// layer-shell stacking ambiguity between the two surfaces).
+PanelWindow {
+    id: root
+    color: "transparent"
+
+    WlrLayershell.namespace: "cava-underbar"
+    WlrLayershell.layer: WlrLayer.Bottom
+    exclusiveZone: 0
+
+    anchors {
+        top: true
+        left: true
+        right: true
+    }
+    margins.top: 38
+    implicitHeight: 8
+
+    readonly property int barCount: 48
+    property var levels: []
+
+    Process {
+        id: cavaProc
+        command: ["@cava@", "-p", "@cavaConfig@"]
+        running: true
+        stdout: SplitParser {
+            splitMarker: "\n"
+            onRead: data => {
+                const parts = data.split(";").filter(s => s.length > 0).map(Number)
+                if (parts.length === root.barCount) root.levels = parts
+            }
+        }
+    }
+
+    Row {
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        spacing: 3
+        height: parent.height
+
+        Repeater {
+            model: root.barCount
+            Rectangle {
+                anchors.bottom: parent.bottom
+                width: 4
+                radius: 2
+                color: Colors.c.accent
+                opacity: 0.7
+                height: root.levels[index] ? Math.max(1, (root.levels[index] / 100) * parent.height) : 1
+                Behavior on height { NumberAnimation { duration: 60 } }
+            }
+        }
+    }
+}

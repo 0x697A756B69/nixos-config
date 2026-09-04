@@ -15,6 +15,7 @@
     ./modules/home/rofi
     ./modules/home/quickshell
     ./modules/home/quickshell/power
+    ./modules/home/quickshell/cava
     ./modules/home/nvim
     ./modules/home/zen.nix
     ./modules/home/apps.nix
