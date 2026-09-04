@@ -31,6 +31,7 @@
           "network#wifi"
           "network#ethernet"
           "custom/bt"
+          "custom/notification"
           "clock"
           "custom/power"
         ];
@@ -124,6 +125,22 @@ pkill -RTMIN+1 waybar''}";
           interval = 30;
           return-type = "json";
           tooltip = false;
+        };
+        "custom/notification" = {
+          tooltip = false;
+          format = "{icon}";
+          format-icons = {
+            notification = "󱅫";
+            none = "󰂚";
+            dnd-notification = "󱏨";
+            dnd-none = "󰂛";
+          };
+          return-type = "json";
+          exec-if = "which swaync-client";
+          exec = "swaync-client -swb";
+          on-click = "swaync-client -t -sw";
+          on-click-right = "swaync-client -d -sw";
+          escape = true;
         };
         clock = {
           format = "{:%H:%M}";
@@ -237,6 +254,8 @@ pkill -RTMIN+1 waybar''}";
       #pulseaudio.muted { color: @disabled; }
       #custom-bt { padding: 0 7px; font-size: 13px; color: @text; min-width: 26px; }
       #custom-bt.bt-off { color: @disabled; }
+      #custom-notification { padding: 0 7px; font-size: 15px; color: @text; min-width: 24px; }
+      #custom-notification.dnd-notification, #custom-notification.dnd-none { color: @disabled; }
       #clock { padding: 0 7px; font-size: 13px; color: @text; min-width: 50px; }
       #custom-power {
         padding: 0 7px;

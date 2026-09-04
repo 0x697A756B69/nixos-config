@@ -52,6 +52,9 @@
   { _args = [ "${mainMod} + CTRL + up"    (inline "hl.dsp.exec_cmd(\"resize_window up\")")    { repeating = true; } ]; }
   { _args = [ "${mainMod} + CTRL + down"  (inline "hl.dsp.exec_cmd(\"resize_window down\")")  { repeating = true; } ]; }
 
+  # --- Notification center (swaync) ---
+  { _args = [ "${mainMod} + N" (inline "hl.dsp.exec_cmd(\"swaync-client -t -sw\")") ]; }
+
   # --- Workspace overview (hyprspace) ---
   { _args = [ "${mainMod} + TAB" (inline "hl.dsp.exec_cmd(\"hyprctl dispatch overview:toggle\")") ]; }
 

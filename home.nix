@@ -8,6 +8,7 @@
   imports = [
     ./modules/home/hyprland
     ./modules/home/waybar
+    ./modules/home/swaync
     ./modules/home/theming/matugen
     ./modules/home/theming/gtk.nix
     ./modules/home/kitty
